@@ -202,17 +202,6 @@
       </tags>
   </entry>
   <entry>
-    <title>【C语言笔记】函数</title>
-    <url>/posts/20230629/135028.html</url>
-    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>C</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【Linux笔记】Shell</title>
     <url>/posts/20230629/135252.html</url>
     <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
@@ -305,6 +294,17 @@
       </categories>
       <tags>
         <tag>网站</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【C语言笔记】函数</title>
+    <url>/posts/20230629/135028.html</url>
+    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>C</tag>
       </tags>
   </entry>
 </search>
