@@ -213,17 +213,6 @@
       </tags>
   </entry>
   <entry>
-    <title>【Linux笔记】简介</title>
-    <url>/posts/20230629/135145.html</url>
-    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【Linux笔记】Shell</title>
     <url>/posts/20230629/135252.html</url>
     <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
@@ -234,6 +223,17 @@
         <tag>Linux</tag>
         <tag>Shell</tag>
         <tag>脚本语言</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Linux笔记】简介</title>
+    <url>/posts/20230629/135145.html</url>
+    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
