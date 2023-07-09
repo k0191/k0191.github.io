@@ -353,6 +353,23 @@ h6::before {
   animation: ccc 6s linear infinite;
 }
 @font-face {
+    font-family: 'WebFontSon';
+    font-display: swap;
+    src: url('https://source.k0191.cyou/font/gbsn00lp-2.ttf') format("truetype");  
+}
+
+@font-face {
+    font-family: 'WebFontYuanTi';
+    font-display: swap;
+    src: url('https://source.k0191.cyou/font/JingNanMaiYuanTi-2.otf') format("opentype");
+}
+
+@font-face {
+    font-family: 'CodeFont';
+    font-display: swap;
+    src: url('https://source.k0191.cyou/font/CascadiaCode.ttf') format("truetype");
+}
+@font-face {
   font-family: "iconfont"; /* Project id 4135249 */
   /* Color fonts */
   src: 
@@ -1833,7 +1850,7 @@ canvas:not(#ribbon-canvas),
   }
 }
 :root {
-  --global-font-size: 17px;
+  --global-font-size: 18px;
   --global-bg: #fff;
   --font-color: #4c4948;
   --hr-border: #a4d8fa;
@@ -1877,7 +1894,7 @@ body {
   background: var(--global-bg);
   color: var(--font-color);
   font-size: var(--global-font-size);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Lato, Roboto, "PingFang SC", "Microsoft JhengHei", "Microsoft YaHei", sans-serif;
+  font-family: WebFontSon, BlinkMacSystemFont, Lato, Roboto, "PingFang SC", "Microsoft JhengHei", "Microsoft YaHei", sans-serif;
   line-height: 2;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
@@ -1984,7 +2001,7 @@ a:hover {
 .site-name,
 #aside-content .author-info__name,
 #aside-content .author-info__description {
-  font-family: Titillium Web, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft JhengHei', 'Microsoft YaHei', sans-serif;
+  font-family: WebFontSon, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft JhengHei', 'Microsoft YaHei', sans-serif;
 }
 .is-center {
   text-align: center;
@@ -2146,7 +2163,7 @@ figure.highlight pre .javascript .function {
 #article-container pre,
 #article-container code {
   font-size: var(--global-font-size);
-  font-family: consolas, Menlo, "PingFang SC", "Microsoft JhengHei", "Microsoft YaHei", sans-serif !important;
+  font-family: CodeFont, Menlo, "PingFang SC", "Microsoft JhengHei", "Microsoft YaHei", sans-serif !important;
 }
 #article-container code {
   padding: 2px 4px;
@@ -2507,7 +2524,7 @@ figure.highlight pre .javascript .function {
   height: 100%;
   vertical-align: top;
   text-align: center;
-  font-family: Titillium Web, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft JhengHei', 'Microsoft YaHei', sans-serif;
+  font-family: WebFontSon, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft JhengHei', 'Microsoft YaHei', sans-serif;
 }
 @media screen and (max-width: 768px) {
   .error404 #error-wrap .error-content .error-info {

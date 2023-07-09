@@ -60,9 +60,9 @@
 <tr>
 <th style="text-align:center">关键字</th>
 <th style="text-align:center">类型</th>
-<th style="text-align:center">16位编译器（unit：Byte）</th>
-<th style="text-align:center">32位编译器（unit：Byte）</th>
-<th style="text-align:center">64位编译器（unit：Byte）</th>
+<th style="text-align:center">16位编译器 <br>unit：Byte</th>
+<th style="text-align:center">32位编译器 <br> unit：Byte</th>
+<th style="text-align:center">64位编译器 <br> unit：Byte</th>
 </tr>
 </thead>
 <tbody>
@@ -200,24 +200,91 @@
     <url>/posts/20230629/134737.html</url>
     <content><![CDATA[<div class="note blue no-icon flat"><p>本文为刚毕业参加工作时，初学C语言时做的一些笔记，适合初学者读阅，内容不保证百分百正确，若您对其中的描述有任何疑问可在留言板块进行留言。</p>
 <p>以下为我使用的C语言的运行和编译环境：<br>System Version: <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version: <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version: 11.3.0<br>STDC VERSIOn: 201710L</p>
-<p><strong>摘要：</strong> </p>
-</div>]]></content>
+<p><strong>摘要：</strong> 简述了表达式的组成，类别，以及相关语法，解释什么是左值和右值。</p>
+</div>
+<h1 id="1-表达式的定义"><a href="#1-表达式的定义" class="headerlink" title="1. 表达式的定义"></a>1. 表达式的定义</h1><p>表达式是由一系列运算符 <code>operators</code> 和操作数 <code>operands</code> 组成的。运算符指明了要进行何种运算和操作，而操作数则是运算符操作的对象。在C语言中，常量、变量、函数调用以及按C语言语法规则用运算符把运算数连接起来的式子都是合法的表达式。</p>
+<ul>
+<li><strong>任何表达式都具有值和类型的两种属性</strong></li>
+<li><strong>在表达式结束后加上分号的句子称为<code>表达式语句</code></strong></li>
+</ul>
+<p><strong>表达式的语法规则</strong><br>[operands] [operators] [operands] …<br>表达式可以是单个的常量或变量，也可是多个常量、变量组合在一起的更复杂的表达式。</p>
+<p><strong>表达式的作用</strong></p>
+<ul>
+<li>数值计算</li>
+<li>指明数据对象</li>
+<li>产生副作用 </li>
+<li>以上目的的结合</li>
+</ul>
+<h2 id="1-1-运算符"><a href="#1-1-运算符" class="headerlink" title="1.1 运算符"></a>1.1 运算符</h2><p>运算符是整个表达式的核心，它代表着表达式需要进行怎样的逻辑运算，预示着表达式的行为和结果，C语言中可用的运算符如下。</p>
+<details class="folding-tag" green><summary> 查看运算符优先级列表 </summary>
+              <div class='content'>
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"><caption>运算符优先级列表</caption>  <tr>    <th width="15%" bgcolor="#66ccff"  align="center">优先级</th>    <th width="15%" bgcolor="#66ccff"  align="center">运算符</th>    <th width="30%" bgcolor="#66ccff"  align="center">含义</th>    <th bgcolor="#66ccff"  align="center">使用形式</th>    <th width="15%" bgcolor="#66ccff"  align="center">结合方向</th>  </tr>  <tr>    <th  rowspan="5">1</th>    <th rowspan="2"> () </th>    <th> 优先级运算符 </th>    <th> (表达式) </th>    <th> 块结合 </th>  </tr>  <tr>    <th> 函数调用运算符 </th>    <th> func_addr() </th>    <th rowspan="4"> 自左至右 </th>  </tr>  <tr>    <th> [] </th>    <th> 下标运算符 </th>    <th> ptr[index] </th>  </tr>  <tr>    <th> -> </th>    <th> 指向成员运算符 </th>    <th> struct_ptr->member </th>  </tr>  <tr>    <th> . </th>    <th> 取成员运算符 </th>    <th> struct_obj.member </th>  </tr>  <tr>    <th  rowspan="9">2</th>    <th> (type) </th>    <th> 类型强制转换运算符 </th>    <th> (int)8.2 </th>    <th> 块结合 </th>  </tr>  <tr>    <th> - </th>    <th> 负号运算符 </th>    <th> -var </th>    <th rowspan="8"> 自右至左 </th>  </tr>  <tr>    <th> ++ </th>    <th> 自增运算符 </th>    <th> var++/++var </th>  </tr>  <tr>    <th> -- </th>    <th> 自减运算符 </th>    <th> var--/--var </th>  </tr>  <tr>    <th> * </th>    <th> 解引用运算符 </th>    <th> *ptr </th>  </tr>  <tr>    <th> & </th>    <th> 取地址运算符 </th>    <th> &var_name </th>  </tr>  <tr>    <th> ! </th>    <th> 逻辑非运算符 </th>    <th> !expr </th>  </tr>  <tr>    <th> ~ </th>    <th> 按位取反运算符 </th>    <th> ~expr </th>  </tr>  <tr>    <th> sizeof </th>    <th> 内存占用长度运算符 </th>    <th> sizeof(var)  </th>  </tr>  <tr>    <th  rowspan="3">3</th>    <th> * </th>    <th> 乘法运算符 </th>    <th> expr * expr </th>    <th  rowspan="3"> 自左至右 </th>  </tr>  <tr>    <th> / </th>    <th> 除法运算符 </th>    <th> expr / expr </th>  </tr>  <tr>    <th> % </th>    <th> 取模运算符 </th>    <th> expr % expr </th>  </tr>  <tr>    <th  rowspan="2">4</th>    <th> + </th>    <th> 加法运算符 </th>    <th> expr + expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> - </th>    <th> 减法运算符 </th>    <th> expr - expr </th>  </tr>  <tr>    <th  rowspan="2">5</th>    <th> << </th>    <th> 左移运算符 </th>    <th> var << expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> >> </th>    <th> 右移运算符 </th>    <th> var >> expr </th>  </tr>  <tr>    <th  rowspan="4">6</th>    <th> > </th>    <th> 大于判断运算符 </th>    <th> expr > expr </th>    <th  rowspan="4"> 自左至右 </th>  </tr>  <tr>    <th> >= </th>    <th> 大于等于判断运算符 </th>    <th> expr >= expr </th>  </tr>  <tr>    <th> < </th>    <th> 小于判断运算符 </th>    <th> expr < expr </th>  </tr>  <tr>    <th> <= </th>    <th> 小于等于判断运算符 </th>    <th> expr <= expr </th>  </tr>  <tr>    <th  rowspan="2">7</th>    <th> == </th>    <th> 等于判断运算符 </th>    <th> expr == expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> != </th>    <th> 不等于判断运算符 </th>    <th> expr != expr </th>  </tr>  <tr>    <th  rowspan="1">8</th>    <th> & </th>    <th> 按位与运算符 </th>    <th> expr & expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">9</th>    <th> ^ </th>    <th> 按位异或运算符 </th>    <th> expr ^ expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">10</th>    <th> | </th>    <th> 按位或运算符 </th>    <th> expr | expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">11</th>    <th> && </th>    <th> 逻辑与运算符 </th>    <th> expr && expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">12</th>    <th> || </th>    <th> 逻辑或运算符 </th>    <th> expr || expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">13</th>    <th> ？: </th>    <th> 条件运算符 </th>    <th> expr1 ？ expr2 : expr3 </th>    <th  rowspan="1"> 自右至左 </th>  </tr>  <tr>    <th  rowspan="11">14</th>    <th> = </th>    <th> 赋值运算符 </th>    <th> var = expr </th>    <th  rowspan="11"> 自右至左 </th>  </tr>  <tr>    <th> *= </th>    <th> 乘后赋值运算符 </th>    <th> var *= expr </th>  </tr>  <tr>    <th> /= </th>    <th> 除后赋值运算符 </th>    <th> var /= expr </th>  </tr>  <tr>    <th> %= </th>    <th> 取模后赋值运算符 </th>    <th> var %= expr </th>  </tr>  <tr>    <th> += </th>    <th> 相加后赋值运算符 </th>    <th> var += expr </th>  </tr>  <tr>    <th> -= </th>    <th> 相减后赋值运算符 </th>    <th> var -= expr </th>  </tr>  <tr>    <th> <<= </th>    <th> 左移后赋值运算符 </th>    <th> var <<= expr </th>  </tr>  <tr>    <th> >>= </th>    <th> 右移后赋值运算符 </th>    <th> var >>= expr </th>  </tr>  <tr>    <th> &= </th>    <th> 按位与后赋值运算符 </th>    <th> var &= expr </th>  </tr>  <tr>    <th> ^= </th>    <th> 按位异或后赋值运算符 </th>    <th> var ^= expr </th>  </tr>  <tr>    <th> |= </th>    <th> 按位或后赋值运算符 </th>    <th> var |= expr </th>  </tr>  <tr>    <th  rowspan="1">15</th>    <th> , </th>    <th> 逗号运算符 </th>    <th> expr , expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th colspan="5" align="left">注:同一优先级的运算符，运算顺序由其结合方向决定</th>  </tr></table>
+              </div>
+            </details>
+<h2 id="1-2-操作数"><a href="#1-2-操作数" class="headerlink" title="1.2. 操作数"></a>1.2. 操作数</h2><p>操作数就是表达式的操作对象，是表达式进行表达的窗口。任何变量或常量都可以是操作数，但在不同的表达式类型中，有其相应的语法规则进行约束。</p>
+<h1 id="2-常量表达式"><a href="#2-常量表达式" class="headerlink" title="2.常量表达式"></a>2.常量表达式</h1><p>常量表达式的特点</p>
+<ul>
+<li>表达式的值不会改变</li>
+<li>在编译期间可以进行确定的值</li>
+</ul>
+<details class="folding-tag" green><summary> e.g. 常量表达式示例 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> a = <span class="number">1</span>;          <span class="comment">//常量表达式</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> b = a + <span class="number">1</span>;      <span class="comment">//由于变量a是常量, 所以该表达式也为常量表达式</span></span><br><span class="line"><span class="type">int</span> c = <span class="number">3</span>;                <span class="comment">//非常量表达式, 变量c非常量</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> d = function(); <span class="comment">//非常量表达式, function()的值在编译期间无法得到</span></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<h1 id="3-左值与右值"><a href="#3-左值与右值" class="headerlink" title="3.左值与右值"></a>3.左值与右值</h1><p>左右值是表达式的值属性的一种描述，在更为复杂的 <strong><code>C++</code></strong> 语法中，左右值的概念更为重要，理解好左值与右值对理解程序以及语法的设计很有帮助。</p>
+<h2 id="3-1-C语言中左值与右值的定义"><a href="#3-1-C语言中左值与右值的定义" class="headerlink" title="3.1. C语言中左值与右值的定义"></a>3.1. C语言中左值与右值的定义</h2><p>C99 标准中定义<code>left value</code>为具有<span class='nota' data-nota='对象即是指一块内存区域'>对象型别</span>或除<code>void</code>外的<span class='nota' data-nota='不完整型别是指可以用来描述一个标识符类别，却无法确认其标识符内存大小的型别'>不完整型别</span>的表达式，也可以理解为一个左值表达式一定表示了一块内存区域。可以使用取地址运算符 <strong><code>&amp;</code></strong> 的表达式一定是左值表达式。  </p>
+<p>在最常见的赋值表达式中，即含有 <strong><code>=</code></strong> 赋值运算符的表达式，若需要该表达式合法，则需要满足</p>
+<ul>
+<li><strong><code>=</code></strong> 号左侧的表达式必须是左值</li>
+<li><strong><code>=</code></strong> 号右侧的表达式可以是左值也可以是右值</li>
+</ul>
+<h2 id="3-2-右值与运算符"><a href="#3-2-右值与运算符" class="headerlink" title="3.2. 右值与运算符"></a>3.2. 右值与运算符</h2><ul>
+<li><p>各种基本数据类型的字面常量<br>字面常量不一定会占据存储空间，编译器可能会将这些字面常量当做立即数进行处理，故字面常量是右值。</p>
+<details class="folding-tag" green><summary> e.g. 字面常量 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">1</span>;         <span class="comment">// 1为字面常量，是右值</span></span><br><span class="line"><span class="type">float</span> b = <span class="number">1.1f</span>;    <span class="comment">// 1.1为字面常量，是右值</span></span><br><span class="line"><span class="type">char</span> c = <span class="string">&#x27;h&#x27;</span>;      <span class="comment">// &#x27;h&#x27;为字面常量，是右值</span></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+<li><p>枚举常量<br>编译器常常将枚举常量当做是值确认的整形的字面常量进行处理，在预编译阶段，枚举常量就会被替换为字面常量，故枚举常量也是右值。</p>
+<details class="folding-tag" green><summary> e.g. 枚举常量 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">week</span>&#123;</span>Mon, Tues, Wed, Thur, Fir, Sat, Sun&#125;;</span><br><span class="line">week tody = Sun;   <span class="comment">// Sun为枚举常量，是右值</span></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+</ul>
+<ul>
+<li><p>双目运算符的运算结果</p>
+<p>C语言中，双目运算符的操作数可以是左值或者右值，但其运算的结果必然是右值。</p>
+</li>
+<li><p>函数调用表达式的返回值</p>
+<p>C语言中，函数调用表达式的值总是一个右值，无法对其进行取地址。</p>
+<details class="folding-tag" green><summary> e.g. </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">func</span><span class="params">(<span class="type">void</span>)</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> *a = &amp;func(); <span class="comment">//这是不合法的</span></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+</ul>
+<h2 id="3-3-左值与运算符"><a href="#3-3-左值与运算符" class="headerlink" title="3.3. 左值与运算符"></a>3.3. 左值与运算符</h2><ul>
+<li><p>字符串常量<br>C语言中的字符串常量是一个左值，可以对其进行取地址。<br>例如：字符串 <code>&quot;hello world&quot;</code>, 对该字符串取地址是合法的 <code>&amp;&quot;hello world&quot;</code>。</p>
+</li>
+<li><p>解引用操作符表达式的结果<br>解引用操作符会产生一个左值，但其操作数可以是左值或右值,即可以对解引用操作符的对象进行赋值操作。</p>
+<details class="folding-tag" green><summary> e.g. 解引用 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">3</span>;</span><br><span class="line"><span class="type">int</span> *ptr = &amp;a;</span><br><span class="line">*ptr = <span class="number">2</span>;      <span class="comment">//*ptr 是左值</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">  *((int *)0x7ffead2b47a0)是一个左值</span></span><br><span class="line"><span class="comment">  但对0x7ffead2b47a0这个地址的值的含义尚不明确</span></span><br><span class="line"><span class="comment">  若该区域没有被引用，则会使程序发生崩溃</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">*((<span class="type">int</span> *)<span class="number">0x7ffead2b47a0</span>) = <span class="number">1</span>; </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+</ul>
+<h1 id="4-逗号表达式"><a href="#4-逗号表达式" class="headerlink" title="4. 逗号表达式"></a>4. 逗号表达式</h1>]]></content>
       <categories>
         <category>笔记</category>
       </categories>
       <tags>
         <tag>C</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【Linux笔记】简介</title>
-    <url>/posts/20230629/135145.html</url>
-    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
@@ -290,6 +357,17 @@
       </categories>
       <tags>
         <tag>C</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Linux笔记】简介</title>
+    <url>/posts/20230629/135145.html</url>
+    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
