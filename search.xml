@@ -232,14 +232,39 @@
               <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> a = <span class="number">1</span>;          <span class="comment">//常量表达式</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> b = a + <span class="number">1</span>;      <span class="comment">//由于变量a是常量, 所以该表达式也为常量表达式</span></span><br><span class="line"><span class="type">int</span> c = <span class="number">3</span>;                <span class="comment">//非常量表达式, 变量c非常量</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> d = function(); <span class="comment">//非常量表达式, function()的值在编译期间无法得到</span></span><br></pre></td></tr></table></figure>
               </div>
             </details>
-<h1 id="3-左值与右值"><a href="#3-左值与右值" class="headerlink" title="3.左值与右值"></a>3.左值与右值</h1><p>左右值是表达式的值属性的一种描述，在更为复杂的 <strong><code>C++</code></strong> 语法中，左右值的概念更为重要，理解好左值与右值对理解程序以及语法的设计很有帮助。</p>
-<h2 id="3-1-C语言中左值与右值的定义"><a href="#3-1-C语言中左值与右值的定义" class="headerlink" title="3.1. C语言中左值与右值的定义"></a>3.1. C语言中左值与右值的定义</h2><p>C99 标准中定义<code>left value</code>为具有<span class='nota' data-nota='对象即是指一块内存区域'>对象型别</span>或除<code>void</code>外的<span class='nota' data-nota='不完整型别是指可以用来描述一个标识符类别，却无法确认其标识符内存大小的型别'>不完整型别</span>的表达式，也可以理解为一个左值表达式一定表示了一块内存区域。可以使用取地址运算符 <strong><code>&amp;</code></strong> 的表达式一定是左值表达式。  </p>
+<h1 id="3-左值与右值"><a href="#3-左值与右值" class="headerlink" title="3.左值与右值"></a>3.左值与右值</h1><p>左值与右值的概念来自于赋值表达式，左右值是表达式的值属性的一种描述，在更为复杂的 <strong><code>C++</code></strong> 语法中，左右值的概念更为重要，理解好左值与右值对理解程序以及语法的设计很有帮助。</p>
+<h2 id="3-1-C语言中左值与右值的定义"><a href="#3-1-C语言中左值与右值的定义" class="headerlink" title="3.1. C语言中左值与右值的定义"></a>3.1. C语言中左值与右值的定义</h2><p>C99 标准中定义<code>lvalue</code>为具有<span class='nota' data-nota='对象即是指一块内存区域'>对象型别</span>或除<code>void</code>外的<span class='nota' data-nota='不完整型别是指可以用来描述一个标识符类别，却无法确认其标识符内存大小的型别'>不完整型别</span>的表达式，也可以理解为一个左值表达式一定表示了一块内存区域。可以使用取地址运算符 <strong><code>&amp;</code></strong> 的表达式一定是左值表达式。<code>rvalue</code>不指向任何对象，仅表示一个值。</p>
 <p>在最常见的赋值表达式中，即含有 <strong><code>=</code></strong> 赋值运算符的表达式，若需要该表达式合法，则需要满足</p>
 <ul>
 <li><strong><code>=</code></strong> 号左侧的表达式必须是左值</li>
 <li><strong><code>=</code></strong> 号右侧的表达式可以是左值也可以是右值</li>
 </ul>
-<h2 id="3-2-右值与运算符"><a href="#3-2-右值与运算符" class="headerlink" title="3.2. 右值与运算符"></a>3.2. 右值与运算符</h2><ul>
+<p>左值的特点</p>
+<ul>
+<li>可通过取地址运算符获取左值的地址。</li>
+<li>可出现在赋值或组合赋值符号的左边或右边。</li>
+<li>可修改的左值可用作赋值运算符的左操作数。</li>
+</ul>
+<p>右值的特点</p>
+<ul>
+<li>无法对右值进行取地址操作。</li>
+<li>右值不能放在赋值或者组合赋值符号的左边。</li>
+<li>右值可以用来初始化const左值引用。</li>
+</ul>
+<h2 id="3-2-左值与运算符"><a href="#3-2-左值与运算符" class="headerlink" title="3.2. 左值与运算符"></a>3.2. 左值与运算符</h2><ul>
+<li><p>变量名、数组名、函数名<br>被<code>const</code> 修饰符修饰的变量名，数组名和函数名都是不可被修改的左值。</p>
+</li>
+<li><p>字符串常量<br>C语言中的字符串常量是一个左值，可以对其进行取地址。<br>例如：字符串 <code>&quot;hello world&quot;</code>, 对该字符串取地址是合法的 <code>&amp;&quot;hello world&quot;</code>。</p>
+</li>
+<li><p>解引用操作符表达式的结果<br>解引用操作符会产生一个左值，但其操作数可以是左值或右值,即可以对解引用操作符的对象进行赋值操作。</p>
+<details class="folding-tag" green><summary> e.g. 解引用 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">3</span>;</span><br><span class="line"><span class="type">int</span> *ptr = &amp;a;</span><br><span class="line">*ptr = <span class="number">2</span>;      <span class="comment">//*ptr 是左值</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">  *((int *)0x7ffead2b47a0)是一个左值</span></span><br><span class="line"><span class="comment">  但对0x7ffead2b47a0这个地址的值的含义尚不明确</span></span><br><span class="line"><span class="comment">  若该区域没有被引用，则会使程序发生崩溃</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">*((<span class="type">int</span> *)<span class="number">0x7ffead2b47a0</span>) = <span class="number">1</span>; </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+</ul>
+<h2 id="3-3-右值与运算符"><a href="#3-3-右值与运算符" class="headerlink" title="3.3. 右值与运算符"></a>3.3. 右值与运算符</h2><ul>
 <li><p>各种基本数据类型的字面常量<br>字面常量不一定会占据存储空间，编译器可能会将这些字面常量当做立即数进行处理，故字面常量是右值。</p>
 <details class="folding-tag" green><summary> e.g. 字面常量 </summary>
               <div class='content'>
@@ -254,37 +279,76 @@
               </div>
             </details>
 </li>
-</ul>
-<ul>
-<li><p>双目运算符的运算结果</p>
-<p>C语言中，双目运算符的操作数可以是左值或者右值，但其运算的结果必然是右值。</p>
+<li><p>双目运算符的运算结果<br>C语言中，双目运算符的操作数可以是左值或者右值，但其运算的结果必然是右值。</p>
 </li>
-<li><p>函数调用表达式的返回值</p>
-<p>C语言中，函数调用表达式的值总是一个右值，无法对其进行取地址。</p>
-<details class="folding-tag" green><summary> e.g. </summary>
+<li><p>函数调用表达式的返回值<br>C语言中，函数调用表达式的值总是一个右值，无法对其进行取地址。</p>
+<details class="folding-tag" green><summary> e.g. 函数返回值 </summary>
               <div class='content'>
               <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">func</span><span class="params">(<span class="type">void</span>)</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> *a = &amp;func(); <span class="comment">//这是不合法的</span></span><br></pre></td></tr></table></figure>
               </div>
             </details>
 </li>
 </ul>
-<h2 id="3-3-左值与运算符"><a href="#3-3-左值与运算符" class="headerlink" title="3.3. 左值与运算符"></a>3.3. 左值与运算符</h2><ul>
-<li><p>字符串常量<br>C语言中的字符串常量是一个左值，可以对其进行取地址。<br>例如：字符串 <code>&quot;hello world&quot;</code>, 对该字符串取地址是合法的 <code>&amp;&quot;hello world&quot;</code>。</p>
-</li>
-<li><p>解引用操作符表达式的结果<br>解引用操作符会产生一个左值，但其操作数可以是左值或右值,即可以对解引用操作符的对象进行赋值操作。</p>
-<details class="folding-tag" green><summary> e.g. 解引用 </summary>
+<h1 id="4-逗号表达式"><a href="#4-逗号表达式" class="headerlink" title="4. 逗号表达式"></a>4. 逗号表达式</h1><p>逗号表达式是指使用逗号运算符的表达式，用于将表达式连接起来，是一种使编程更简洁的语法。其一般形式为：<br><code>[表达式1], [表达式2], [...]</code></p>
+<details class="folding-tag" green><summary> e.g. 逗号表达式 </summary>
               <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">3</span>;</span><br><span class="line"><span class="type">int</span> *ptr = &amp;a;</span><br><span class="line">*ptr = <span class="number">2</span>;      <span class="comment">//*ptr 是左值</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">  *((int *)0x7ffead2b47a0)是一个左值</span></span><br><span class="line"><span class="comment">  但对0x7ffead2b47a0这个地址的值的含义尚不明确</span></span><br><span class="line"><span class="comment">  若该区域没有被引用，则会使程序发生崩溃</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">*((<span class="type">int</span> *)<span class="number">0x7ffead2b47a0</span>) = <span class="number">1</span>; </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">10</span>;</span><br><span class="line"><span class="type">int</span> b = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">a = <span class="number">2</span>*a, <span class="number">4</span>*a;    <span class="comment">//结果为 a = 20, 赋值运算符的优先级高于逗号运算符</span></span><br><span class="line"></span><br><span class="line">b = (<span class="number">2</span>*b, <span class="number">4</span>*b);  <span class="comment">//结果为 b = 40</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//不是逗号表达式，这里的逗号并不是被用作逗号运算符，而是被用作传递实参的分隔符</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;a = %d, b = %d\n&quot;</span>, a, b);</span><br><span class="line"></span><br><span class="line"><span class="comment">// (a, b)为逗号表达式, 结果为 a = 40, b = 40;</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;a = %d, b = %d\n&quot;</span>, (a, b), b);</span><br></pre></td></tr></table></figure>
               </div>
             </details>
-</li>
-</ul>
-<h1 id="4-逗号表达式"><a href="#4-逗号表达式" class="headerlink" title="4. 逗号表达式"></a>4. 逗号表达式</h1>]]></content>
+<p>上述例子中 <code>4 * a</code> 和 <code>2 * b</code> 均是无意义的表达式，其没有产生任何的<code>副作用</code>，若在编译时打开 <strong><code>-Wall</code></strong> 选项，便会看见 <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-value">-Wunused-value</a> 的警告。</p>
+<h1 id="4-1-常见用法"><a href="#4-1-常见用法" class="headerlink" title="4.1. 常见用法"></a>4.1. 常见用法</h1><details class="folding-tag" green><summary> e.g. 同类型变量声明 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a, b, c, d, e;</span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<details class="folding-tag" green><summary> e.g. 循坏语句 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>, j = <span class="number">1</span>; i &lt; <span class="number">2</span> &amp;&amp; j &lt; <span class="number">3</span>; i++, j++)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span>(i++, i &lt; <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<details class="folding-tag" green><summary> e.g. return 语句 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">return</span> a = <span class="number">1</span>, ... , a;</span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<h1 id="5-前缀-与后缀"><a href="#5-前缀-与后缀" class="headerlink" title="5. 前缀 ++ / -- 与后缀 ++ / --"></a>5. 前缀 <code>++</code> / <code>--</code> 与后缀 <code>++</code> / <code>--</code></h1><p>前缀形式的等效表达式如下:<br><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span>&amp; <span class="type">int</span>::<span class="keyword">operator</span>++()</span><br><span class="line">&#123;</span><br><span class="line">  *<span class="keyword">this</span> += <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>前缀形式返回的是自身加1后的值。</p>
+<p>后缀形式的等效表达式如下:<br><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> <span class="type">int</span>::<span class="keyword">operator</span>++(<span class="type">int</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> oldValue = *<span class="keyword">this</span>;</span><br><span class="line">  ++(*<span class="keyword">this</span>);</span><br><span class="line">  <span class="keyword">return</span> oldValue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>后缀形式返回保存的先前自身的值，自身已进行加1操作。</p>
+<p>这里举例 <code>C++</code> 的实现是因为在 <code>C++</code> 的语法中，<strong>前缀操作是一个左值，而后缀操作是一个右值</strong>，这一点与C有着区别，C中不管是前缀操作还是后缀操作，其都是右值。</p>
+<details class="folding-tag" green><summary> e.g. </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">3</span>;</span><br><span class="line">++a = <span class="number">4</span>;</span><br></pre></td></tr></table></figure><p>使用gcc编译，会出现 <code>lvalue required as left operand of assignment</code> 的报错，而使用g++编译则不会。</p>
+              </div>
+            </details>
+]]></content>
       <categories>
         <category>笔记</category>
       </categories>
       <tags>
         <tag>C</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Linux笔记】简介</title>
+    <url>/posts/20230629/135145.html</url>
+    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Linux笔记】Shell</title>
+    <url>/posts/20230629/135252.html</url>
+    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>Shell</tag>
+        <tag>脚本语言</tag>
       </tags>
   </entry>
   <entry>
@@ -347,40 +411,16 @@
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//定义一个函数指针类型的自定义类型FUNC_TYPE</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="title function_">void</span> <span class="params">(*FUNC_TYPE)</span> <span class="params">(<span class="type">int</span> a)</span>;</span><br><span class="line">FUNC_TYPE funcptr4 = func2;</span><br><span class="line">funcptr4(<span class="number">4</span>);</span><br></pre></td></tr></table></figure>
 <h1 id="4-函数返回值"><a href="#4-函数返回值" class="headerlink" title="4. 函数返回值"></a>4. 函数返回值</h1><p>在函数调用过程中，未使用static修饰定义的变量是动态存储的局部变量，局部变量是被压入栈区中存储的，当函数返回时，这些局部变量出栈，即局部变量已经被销毁，局部变量所占用的内存空间没有被清空，但是已经可以被分配给其他变量了，所以有可能在函数退出时，该内存已经被修改了，对于此局部变量来说已经是没有意义的值了。</p>
 <p>在C语言中，通过<code>return</code>语句返回的值是被存储在寄存器中的，主调函数可以通过<code>=</code>等号直接取得函数的返回值。在16位程序中，返回值保存在<code>ax</code>寄存器中，32位程序中，返回值保持在<code>eax</code>寄存器中，64位程序的返回值，<code>edx</code>寄存器保存高32bit，<code>eax</code>寄存器保存低32bit。在函数调用结束后，返回值被临时存储到寄存器中，并没有放到堆或栈中，与内存没有关系。当退出函数的时候，局部变量可能被销毁，但是返回值已被存储到寄存器中，已与局部变量的生命周期无关。</p>
-<p>寄存器的储存空间有限，当函数需要返回占用内存较大的结构体类型时，应返回该结构体的地址，且该结构体类型变量不应该是动态存储的局部变量，否则，返回动态存储变量的地址是无效的，甚至会对程序带来灾难。</p>
+<p><del>寄存器的储存空间有限，当函数需要返回占用内存较大的结构体类型时，应返回该结构体的地址</del><span class='nota' data-nota='2023/7/10/修改'>已作废</span>。<br>现代编译器会对内存大小小于指针类型所占用空间的返回值使用寄存器存储其返回值，而对于内存大小大于指针类型占用空间大小的返回值，编译器会根据自身的策略，决定是使用栈区内存来存储返回值还是申请堆区内存来存储返回值。然后将该内存的值通过拷贝赋值给调用方。相较于存储在寄存器中的变量的拷贝，这种从内存的拷贝赋值的方式是较慢的。所以在需要返回占用内存较大的结构时，应返回其对应结构体的地址，而不是结构体本身。<br>对于返回值是指针类型的，该指针不能指向的是动态存储的局部变量，否则，返回动态存储变量的地址是无效的，甚至会对程序带来灾难。</p>
 <h1 id="4-1-指针函数"><a href="#4-1-指针函数" class="headerlink" title="4.1. 指针函数"></a>4.1. 指针函数</h1><p>指针函数是指返回类型为指针的函数，指针则意味着其值是指向某个变量的地址，这里需要注意的是，若变量是在该函数中定义的栈区局部变量，返回该变量的指针是毫无意义的，且容易给程序带来严重的灾难，因为函数返回后，其栈顶指针下移，在这之上的栈区内存会被新定义的变量所覆盖，原变量的内存中的值以及毫无意义，甚至是错误的。</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">char</span> *<span class="title function_">get_file_name1</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *p = <span class="built_in">strrchr</span>(path, <span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">  <span class="type">char</span> file_name[<span class="number">64</span>] = &#123;<span class="string">&quot;\0&quot;</span>&#125;; </span><br><span class="line"></span><br><span class="line">  <span class="built_in">strncpy</span>(file_name, p ? p + <span class="number">1</span> : path, <span class="keyword">sizeof</span>(file_name));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> file_name;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">char</span> *<span class="title function_">get_file_name2</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *p = <span class="built_in">strrchr</span>(path, <span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">  <span class="type">char</span> *file_name = <span class="built_in">malloc</span>(<span class="number">64</span>); </span><br><span class="line"></span><br><span class="line">  <span class="built_in">strncpy</span>(file_name, p ? p + <span class="number">1</span> : path, <span class="number">64</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> file_name;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>在上述例子中 <code>get_file_name1</code> 和 <code>get_file_name2</code> 都为一个指针函数，都返回一个指向 <code>char</code> 类型的指针(字符串)，但区别是 <code>get_file_name1</code> 返回的变量是定义在栈区内存的字符串变量，而 <code>get_file_name2</code> 返回的变量是定义在堆区内存的字符串变量，在函数返回后，栈顶指针下移，其上方内存区域的值会被后续新定义的变量所覆盖，其内存区域的值已变得毫无意义，而堆区中的内存在不被手动释放后是无法被其他变量进行覆盖的，但要记住在使用该变量后，释放掉该内存。</p>
-<h1 id="5-匿名函数"><a href="#5-匿名函数" class="headerlink" title="5. 匿名函数"></a>5. 匿名函数</h1><h2 id="Lambda表达式"><a href="#Lambda表达式" class="headerlink" title="Lambda表达式"></a>Lambda表达式</h2>]]></content>
+<h1 id="5-内联函数"><a href="#5-内联函数" class="headerlink" title="5. 内联函数"></a>5. 内联函数</h1><h1 id="6-内建函数"><a href="#6-内建函数" class="headerlink" title="6. 内建函数"></a>6. 内建函数</h1><h1 id="7-匿名函数-Lambda表达式"><a href="#7-匿名函数-Lambda表达式" class="headerlink" title="7. 匿名函数(Lambda表达式)"></a>7. 匿名函数(Lambda表达式)</h1><h2 id="Lambda表达式"><a href="#Lambda表达式" class="headerlink" title="Lambda表达式"></a>Lambda表达式</h2>]]></content>
       <categories>
         <category>笔记</category>
       </categories>
       <tags>
         <tag>C</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【Linux笔记】简介</title>
-    <url>/posts/20230629/135145.html</url>
-    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【Linux笔记】Shell</title>
-    <url>/posts/20230629/135252.html</url>
-    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>Shell</tag>
-        <tag>脚本语言</tag>
       </tags>
   </entry>
 </search>
