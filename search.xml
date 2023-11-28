@@ -1,10 +1,382 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>【C语言笔记】函数</title>
+    <url>/posts/20230629/135028.html</url>
+    <content><![CDATA[<div class="note blue no-icon flat"><p>本文为刚毕业参加工作时，初学C语言时做的一些笔记，适合初学者读阅，内容不保证百分百正确，若您对其中的描述有任何疑问可在留言板块进行留言。</p>
+<p>以下为我使用的C语言的运行和编译环境：<br>System Version : <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version : <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version : <a href="https://gcc.gnu.org/gcc-11/">11.3.0</a><br>STDC Version : <a href="https://www.open-std.org/JTC1/SC22/WG14/">201710L</a></p>
+<p><strong>摘要：</strong> 简单的描述了C语言中的函数的声明和定义、函数名的作用、堆和栈的区别、以及简述了如何在C语言中使用匿名函数。</p>
+</div>
+<h1 id="1-函数简介"><a href="#1-函数简介" class="headerlink" title="1. 函数简介"></a>1. 函数简介</h1><p>C语言中的函数可以抽象的理解为可轻松重复使用的代码块，它将一个个表达式和变量封装在一起，用来独立地完成某个功能。函数存在入口和出口，在入口处可以接收用户传递的参数，也可以不接收，在出口处可以将一些函数内部信息返回，也可以不返回任何信息。</p>
+<p>将代码块封装成函数的过程叫做函数的定义。</p>
+<h2 id="1-1-声明"><a href="#1-1-声明" class="headerlink" title="1.1. 声明"></a>1.1. 声明</h2><p>形参：函数原型中定义的参数，其作用域为整个函数。</p>
+<p><code>[链接属性修饰符] 函数返回类型 函数名 (形参数据类型列表);</code></p>
+<p>函数返回类型可以是任意的数据类型(包括基本类型、空类型、构造类型、指针类型、自定义类型)，当返回类型为<code>void</code>时，表明函数无返回值，函数体内可以无<code>return</code>语句。函数体中<code>return</code>语句返回的数据类型需与函数声明的函数返回类型相同。</p>
+<p>函数的形参数据类型列表可以包含多个任意类型的参数，也可不写任何形参(不符合编程规范)。</p>
+<p>在函数声明的形参数据类型列表中，可以只写明形参的数据类型，而不用书写变量名。</p>
+<p>链接属性修饰符可不书写，默认为<code>extern</code>，一般将具有外部链接属性的函数声明放在头文件中，供其它翻译单元引用。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//声明返回类型为void,形参列表为void的函数func1,该函数无任何返回值以及需要传入的参数</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">func1</span> <span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明返回类型为void *,形参列表为int的函数func2,该函数返回void *类型值以及需要传入一个int类型的参数</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">func2</span> <span class="params">(<span class="type">int</span> a)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//函数声明可以存在多个,这里可以省略形参,编译器会根据函数的定义来确定函数的形参列表</span></span><br><span class="line"><span class="keyword">struct</span> school <span class="title function_">func3</span> <span class="params">(<span class="keyword">struct</span> student)</span>;</span><br><span class="line"><span class="keyword">struct</span> school <span class="title function_">func3</span> <span class="params">()</span>; </span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> <span class="title">err_code</span> <span class="title">err_code</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//声明具有内部链接属性,返回类型为err_code,形参列表为int的函数func4</span></span><br><span class="line"><span class="type">static</span> err_code <span class="title function_">func4</span> <span class="params">(<span class="type">int</span> index)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明具有外部链接属性,返回类型为err_code,形参列表为const char *的函数func5</span></span><br><span class="line"><span class="keyword">extern</span> err_code <span class="title function_">func5</span> <span class="params">(<span class="type">const</span> <span class="type">char</span> *str)</span>;</span><br></pre></td></tr></table></figure>
+<p>函数的声明是非必须的，若需要在不同的翻译单元中引用某个函数或不在该函数的作用域内引用，则需要在未定义该函数的翻译单元中进行函数声明，函数的声明应与函数的定义保持一致性。</p>
+<h2 id="1-2-定义"><a href="#1-2-定义" class="headerlink" title="1.2. 定义"></a>1.2. 定义</h2><p><code>[链接属性修饰符] 函数返回类型 函数名 (形参列表) &#123;  函数体 &#125;</code></p>
+<p>函数的定义即函数的实现，在一个程序所链接的所有的翻译单元中只能存在一个具有外部链接属性的函数实现(ODR:一个定义规则)，否则在编译时会出现链接器链接报错，但可以在不同的翻译单元中存在同名的具有内部链接属性的函数实现。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">func1</span> <span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义具有内部属性的函数func2，其返回值为void *类型，形参为整型变量a</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> *<span class="title function_">func2</span> <span class="params">(<span class="type">int</span> a)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="1-3-函数的作用域"><a href="#1-3-函数的作用域" class="headerlink" title="1.3. 函数的作用域"></a>1.3. 函数的作用域</h2><p>就单一的翻译单元来说，其函数若未使用 <strong><code>static</code></strong> 关键字进行修饰和在任何其他地方进行声明，其作用域为从翻译单元的定义处一直到该翻译单元的结束位置。也可使用声明来扩展其作用域，函数被声明后，其作用域为声明处一直到该翻译单元的结束位置。</p>
+<h1 id="2-函数调用"><a href="#2-函数调用" class="headerlink" title="2. 函数调用"></a>2. 函数调用</h1><h2 id="2-1-堆与栈"><a href="#2-1-堆与栈" class="headerlink" title="2.1. 堆与栈"></a>2.1. 堆与栈</h2><h3 id="2-1-1-栈"><a href="#2-1-1-栈" class="headerlink" title="2.1.1 栈"></a>2.1.1 栈</h3><p>栈是程序运行内存中的一个特别区域，它用来存储被每一个函数(包括 <strong><code>mian</code></strong> 函数)创建的动态存储局部变量，包括函数本身。栈是 <strong><code>FILO</code></strong> 结构体(First input Last output)，就是先进后出原则的结构体，它直接被CPU管理和充分利用。每次函数声明和定义一个新的局部变量时，它就会被 <strong><code>push</code></strong> 到栈中，然后在每次一个函数退出时，所有关于这个函数中定义的局部变量(包括形参)都会被释放(栈顶重新调整，释放处内存空间中的数据并不会被马上覆盖，而是等到下一个局部变量入栈时进行覆盖)。一旦栈中的变量释放，这块栈的区域就会变成可用的，提供给其他栈中的变量。用栈存储变量的好处是，其内存是被CPU直接管理的，不需要进行手动的创建内存和手动的释放内存。CPU组织和管理栈内存是很高效的，读出和写入栈中存储的变量是很快的。<br>栈的内存空间相对较小，在定义局部变量和调用函数时应考虑开辟的栈空间大小是否合适，避免造成栈溢出。</p>
+<h3 id="2-1-2-堆"><a href="#2-1-2-堆" class="headerlink" title="2.1.2 堆"></a>2.1.2 堆</h3><p>堆也是程序运行内存中的一个特别区域，但不是被自动管理的内存区域，对堆内存的使用，需要进行手动的申请(C:malloc/C++:new)和手动释放(C:free/C++:delete)。如果手动申请一片堆区内存后，而不进行手动释放，在程序运行的过程中，此处堆内存不会被清理，其他变量也无法申请该区域的内存，此时会造成内存泄漏的问题。堆区内存比栈区内存空间大，但也是有限的，操作系统为程序分配的堆内存若被耗尽，则会被操作系统杀死该进程程序。若是在无操作系统管理的设备上造成内存泄漏，会使整个系统发生崩溃。</p>
+<h3 id="2-1-3-栈和堆的优缺点"><a href="#2-1-3-栈和堆的优缺点" class="headerlink" title="2.1.3. 栈和堆的优缺点"></a>2.1.3. 栈和堆的优缺点</h3><ul>
+<li>栈<ol>
+<li>快速访问。</li>
+<li>没有必要明确的创建分类变量，因为它是自动管理的。</li>
+<li>空间被CPU高效地管理着，内存不会变成碎片。</li>
+<li>只有局部变量。</li>
+<li>受限于栈大小(取决于操作系统)。</li>
+<li>变量不能调整大小。</li>
+</ol>
+</li>
+<li>堆<ol>
+<li>变量可以被全局访问。</li>
+<li>没有内存大小限制。</li>
+<li>访问比较慢(相对栈区访问)。</li>
+<li>没有高效地使用空间，随着块内存的创建和销毁，内存可能会变成碎片。</li>
+<li>必须手动管理内存(变量的创建和销毁由开发人员负责)。</li>
+<li>变量大小可以用realloc()调整。</li>
+</ol>
+</li>
+</ul>
+<h2 id="2-2-调用的本质"><a href="#2-2-调用的本质" class="headerlink" title="2.2. 调用的本质"></a>2.2. 调用的本质</h2><p>C语言通过函数名后跟括号加上实参的形式进行函数调用。函数的调用是消耗栈区内存空间的，调用函数时，将函数定义所在的地址压入栈顶，栈顶指针”上移”，函数返回时，将压入的函数定义的地址弹出，栈顶指针”下移”，此次栈区空间被释放。若存在函数的多级调用而函数一直未返回(嵌套函数，递归函数)，栈区的内存空间会很快被消耗完，造成栈溢出。</p>
+<h2 id="2-3-参数传递"><a href="#2-3-参数传递" class="headerlink" title="2.3. 参数传递"></a>2.3. 参数传递</h2><h3 id="2-3-1-实参与形参"><a href="#2-3-1-实参与形参" class="headerlink" title="2.3.1. 实参与形参"></a>2.3.1. 实参与形参</h3><p>实参：实际定义的变量，定义后就会分配内存，出现在主调函数中，在被调用后，会将实参所对应类型的值赋值给形参，实参变量也不能使用<br>形参：在函数定义时，形式上的参数，只有在函数被调用时才分配内存单元(栈区)，在调用结束时，即刻释放所分配的内存单元。因此，形参也是局部变量，作用域为在整个函数内部有效。函数调用结束返回主调函数后则不能再使用该形参变量。</p>
+<ul>
+<li>参数的传递是单向的，仅能是从实参传递给形参，形参无法将值传递给实参。</li>
+<li>实参传递给形参的参数个数、类型和顺序都应相同，否则会进行数据类型的强制转换，可能出现数据丢失或者”类型不匹配”的错误。</li>
+</ul>
+<h3 id="2-3-2-值传递与引用传递"><a href="#2-3-2-值传递与引用传递" class="headerlink" title="2.3.2. 值传递与引用传递"></a>2.3.2. 值传递与引用传递</h3><p>仅将实参的值拷贝给形参，称为值传递。由于参数传递的单向性，形参在函数内部被修改值后，无法传递给外部的实参，即值传递不影响实参的值。</p>
+<p>C语言没有实质上的引用传递，而是通过传入变量的地址而达到修改实参的目的。将实参的地址传递给形参，由于形参所指向的地址为实参变量的地址，所以修改形参对应地址中存储的值，就是修改实参变量的值，从而达到引用传递的目的。在C++中存在引用传递的语法，在形参变量前面加上<code>&amp;</code>符号意为是对实参的引用，在函数内部对形参变量的操作，就是对实参变量的操作。</p>
+<h1 id="3-函数指针"><a href="#3-函数指针" class="headerlink" title="3. 函数指针"></a>3. 函数指针</h1><p>函数指针也是一种指针类型类型，可以通过函数指针进行函数的调用。</p>
+<p>函数指针的定义语法为<code>[链接属性修饰符] 函数返回类型 (*指针变量名)(函数形参类型列表);</code></p>
+<p>将函数的地址赋值给函数指针后，就可以通过该函数指针进行函数的调用。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//定义一个名为funcptr1的函数指针，未初始化</span></span><br><span class="line"><span class="type">void</span> (*funcptr1) (<span class="type">int</span> a);</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个名为funcptr2的函数指针，并初始化的指向func2</span></span><br><span class="line"><span class="type">void</span> (*funcptr2) (<span class="type">int</span> a) = func2;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个名为funcptr3的函数指针，并初始化的指向func2</span></span><br><span class="line"><span class="type">void</span> (*funcptr3) (<span class="type">int</span> a) = &amp;func2;</span><br><span class="line"></span><br><span class="line"><span class="comment">//一般将函数指针定义为结构体的成员变量，用于构筑对象</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">man</span> &#123;</span></span><br><span class="line">  <span class="type">char</span> name[<span class="number">16</span>];</span><br><span class="line">  <span class="type">int</span> (*eat) (<span class="type">int</span> count);</span><br><span class="line">  <span class="type">int</span> (*run) (<span class="type">int</span> speed);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//通过函数指针调用func2</span></span><br><span class="line">funcptr2(<span class="number">2</span>);</span><br><span class="line">funcptr3(<span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+<p>函数的定义的名称，实际上是一个符号，并非是真正意义上的函数地址，而直接通过函数名称对函数指针赋值实际是一种语法糖(减少程序书写量的写法)，<code>sizeof(func2) = 1</code>，而标准的写法即是对函数名进行取地址后赋值给函数指针。但在实际开发过程中，多数是funcptr2的赋值方式。</p>
+<p>使用 <strong><code>typedef</code></strong> 定义自定义的函数指针类型</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//定义一个函数指针类型的自定义类型FUNC_TYPE</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="title function_">void</span> <span class="params">(*FUNC_TYPE)</span> <span class="params">(<span class="type">int</span> a)</span>;</span><br><span class="line">FUNC_TYPE funcptr4 = func2;</span><br><span class="line">funcptr4(<span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+<h1 id="4-函数返回值"><a href="#4-函数返回值" class="headerlink" title="4. 函数返回值"></a>4. 函数返回值</h1><p>在函数调用过程中，未使用static修饰定义的变量是动态存储的局部变量，局部变量是被压入栈区中存储的，当函数返回时，这些局部变量出栈，即局部变量已经被销毁，局部变量所占用的内存空间没有被清空，但是已经可以被分配给其他变量了，所以有可能在函数退出时，该内存已经被修改了，对于此局部变量来说已经是没有意义的值了。</p>
+<p>在C语言中，通过<code>return</code>语句返回的值是被存储在寄存器中的，主调函数可以通过<code>=</code>等号直接取得函数的返回值。在16位程序中，返回值保存在<code>ax</code>寄存器中，32位程序中，返回值保持在<code>eax</code>寄存器中，64位程序的返回值，<code>edx</code>寄存器保存高32bit，<code>eax</code>寄存器保存低32bit。在函数调用结束后，返回值被临时存储到寄存器中，并没有放到堆或栈中，与内存没有关系。当退出函数的时候，局部变量可能被销毁，但是返回值已被存储到寄存器中，已与局部变量的生命周期无关。</p>
+<p><del>寄存器的储存空间有限，当函数需要返回占用内存较大的结构体类型时，应返回该结构体的地址</del><span class='nota' data-nota='2023/7/10/修改'>已作废</span>。<br>现代编译器会对内存大小小于指针类型所占用空间的返回值使用寄存器存储其返回值，而对于内存大小大于指针类型占用空间大小的返回值，编译器会根据自身的策略，决定是使用栈区内存来存储返回值还是申请堆区内存来存储返回值，然后将该内存的值通过拷贝赋值给调用方。相较于存储在寄存器中的变量的拷贝，这种从内存的拷贝赋值的方式是较慢的。所以在需要返回占用内存较大的结构时，应返回其对应结构体的地址，而不是结构体本身。<br>对于返回值是指针类型的，该指针不能指向的是动态存储的局部变量，否则，返回动态存储变量的地址是无效的，甚至会对程序带来灾难。</p>
+<h1 id="4-1-指针函数"><a href="#4-1-指针函数" class="headerlink" title="4.1. 指针函数"></a>4.1. 指针函数</h1><p>指针函数是指返回类型为指针的函数，指针则意味着其值是指向某个变量的地址，这里需要注意的是，若变量是在该函数中定义的栈区局部变量，返回该变量的指针是毫无意义的，且容易给程序带来严重的灾难，因为函数返回后，其栈顶指针下移，在这之上的栈区内存会被新定义的变量所覆盖，原变量的内存中的值以及毫无意义，甚至是错误的。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">char</span> *<span class="title function_">get_file_name1</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *p = <span class="built_in">strrchr</span>(path, <span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">  <span class="type">char</span> file_name[<span class="number">64</span>] = &#123;<span class="string">&quot;\0&quot;</span>&#125;; </span><br><span class="line"></span><br><span class="line">  <span class="built_in">strncpy</span>(file_name, p ? p + <span class="number">1</span> : path, <span class="keyword">sizeof</span>(file_name));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> file_name;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">char</span> *<span class="title function_">get_file_name2</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *p = <span class="built_in">strrchr</span>(path, <span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">  <span class="type">char</span> *file_name = <span class="built_in">malloc</span>(<span class="number">64</span>); </span><br><span class="line"></span><br><span class="line">  <span class="built_in">strncpy</span>(file_name, p ? p + <span class="number">1</span> : path, <span class="number">64</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> file_name;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上述例子中 <code>get_file_name1</code> 和 <code>get_file_name2</code> 都为一个指针函数，都返回一个指向 <code>char</code> 类型的指针(字符串)，但区别是 <code>get_file_name1</code> 返回的变量是定义在栈区内存的字符串变量，而 <code>get_file_name2</code> 返回的变量是定义在堆区内存的字符串变量，在函数返回后，栈顶指针下移，其上方内存区域的值会被后续新定义的变量所覆盖，其内存区域的值已变得毫无意义，而堆区中的内存在不被手动释放后是无法被其他变量进行覆盖的，但要记住在使用该变量后，释放掉该内存。</p>
+<h1 id="5-内联函数"><a href="#5-内联函数" class="headerlink" title="5. 内联函数"></a>5. 内联函数</h1><p>前面提到函数的调用是需要消耗栈内存的，也存在入栈和出栈的处理时间，若某函数需要频繁的被调用且该函数的功能实现较为简单，则可以使用<span class='nota' data-nota='使用 inline关键字定义的函数体'>内联函数</span> 来提升程序的执行速度和减轻栈内存压力。</p>
+<p>什么是内联函数？</p>
+<ul>
+<li>编译器会直接将内联函数体的实现代码替换掉其函数调用代码，类似于宏展开的行为，但此过程发生在 <span class='nota' data-nota='编译过程有四个处理阶段:预编译、编译、汇编、链接'>编译阶段</span>。</li>
+</ul>
+<p><strong><code>inline</code></strong> 关键字使用注意事项</p>
+<ol>
+<li>必须与函数体定义一起使用，才能使函数成为内联函数，在函数声明时使用是无效的。</li>
+<li><code>inline</code>关键字只是编译建议，具体是否进行内联，由编译器决定。内联函数的实现必须是简单可靠的，不可递归。</li>
+<li>当内联函数不与任何<span class='nota' data-nota='static与extern'>链接属性关键字</span>一起使用且内联失效时，则此函数不会被定义，调用者在链接阶段会报<code>找不到该函数定义</code>的错误。</li>
+<li>当内联函数与 <strong><code>static</code></strong> 关键字一起使用时，若内联失效，则此内联函数会被当做普通的具有内部链接属性的函数，不会出现未定义的情况。</li>
+<li>当一个函数使用 <strong><code>extern</code></strong> 关键字声明或定义时，<code>inline</code> 关键字失效。</li>
+</ol>
+<details class="folding-tag" green><summary> e.g. 内联函数示例 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">inline</span> <span class="type">int</span> <span class="title function_">get_big</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> a &gt; b ? a : b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">inline</span> <span class="type">int</span> num_spin(<span class="type">unsigned</span> <span class="type">int</span> a, <span class="type">unsigned</span> <span class="type">int</span> b)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">while</span>(a--)&#123;</span><br><span class="line">        b++;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;b %d\n&quot;</span>, b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p><code>get_big</code>内联函数的定义简单，就一个比较语句，无论是否开启编译优化，该函数都可以成功内联。<br><code>num_spin</code>内联函数的定义中存在循坏语句，是复杂语句，编译器在不加优化选项时会内联失败，可以使用<code>-Winline</code>控制内联失败告警的输出。由于该内联函数是非静态的，编译器在会忽略其定义，调用者会找不到其定义编译报错。可使用 <strong><code>-O3</code></strong> 的优化选项，使编译器更为激进的将复杂的非静态内联函数进行内联展开，或定义为静态内联函数，即使编译器内联展开失败，也会存在该函数原型的定义。</p>
+              </div>
+            </details>
+<h1 id="6-内建函数"><a href="#6-内建函数" class="headerlink" title="6. 内建函数"></a>6. 内建函数</h1><p>内建函数是指由编译器提供的函数，这些函数像关键字一样可以直接使用，不需要包含对应的头文件。<br>内建函数的函数命名通常以<code>__builtin</code>开头，其主要功能如下:</p>
+<ul>
+<li>处理变长参数列表</li>
+<li>处理程序运行异常</li>
+<li>程序编译和性能优化</li>
+<li>查看函数运行的堆栈、C标准库的内建版本等信息</li>
+</ul>
+<h2 id="6-1-常用的内建函数"><a href="#6-1-常用的内建函数" class="headerlink" title="6.1. 常用的内建函数"></a>6.1. 常用的内建函数</h2><h3 id="builtin-return-address-level"><a href="#builtin-return-address-level" class="headerlink" title="__builtin_return_address(level)"></a>__builtin_return_address(level)</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> * __builtin_return_address (<span class="type">unsigned</span> <span class="type">int</span> level);</span><br></pre></td></tr></table></figure>
+<p>该函数用于返回当前函数或调用者的返回地址。参数<code>level</code>含义如下:</p>
+<ul>
+<li>0: 返回当前函数的返回地址</li>
+<li>1: 返回当前函数调用者的返回地址</li>
+<li>2: 返回当前函数调用者的调用者的返回地址</li>
+<li>…开始套娃</li>
+</ul>
+<h3 id="builtin-frame-address"><a href="#builtin-frame-address" class="headerlink" title="__builtin_frame_address"></a>__builtin_frame_address</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> * __builtin_frame_address (<span class="type">unsigned</span> <span class="type">int</span> level)</span><br></pre></td></tr></table></figure>
+<p>该函数返回当前函数或调用者的栈帧地址。参数<code>level</code>含义同上。</p>
+<h3 id="builtin-constant-p"><a href="#builtin-constant-p" class="headerlink" title="__builtin_constant_p"></a>__builtin_constant_p</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> __builtin_constant_p(...)</span><br></pre></td></tr></table></figure>
+<p>该函数用于判断参数是否为常量，若为常量则返回1，否则返回0，常用于编译优化和性能优化。根据操作的参数是常量从而走不同的分支来进行优化处理。</p>
+<h3 id="builtin-expect"><a href="#builtin-expect" class="headerlink" title="__builtin_expect"></a>__builtin_expect</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">long</span> __builtin_expect(<span class="type">long</span> <span class="built_in">exp</span>, <span class="type">long</span> c);</span><br></pre></td></tr></table></figure>
+<p>在编译分支语句的过程中，编译器会将可能性更大的分支代码紧跟着前面的代码，从而减少指令跳转带来的性能上的下降, 达到优化程序的目的。函数<code>__builtin_expect</code>中参数<code>exp</code>就是你的表达表达式，而参数<code>c</code>是你的期望 <code>exp == c</code>，但整个函数的返回值与参数<code>c</code>无关，该函数只是提醒编译器该表达式的值等于<code>c</code>的可能性很大，从而使编译器对分支进行优化，将可能性大的分支放在前面。<br>例；下述代码中，预测表达式<code>exp</code>的值等于<code>0</code>的可能性比较大，即走<code>else</code>分支的可能性大，编译器则会将调用<code>func2</code>的代码放在紧接着上一个语句代码的地方。<br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (__builtin_expect(<span class="built_in">exp</span>, <span class="number">0</span>)) &#123;</span><br><span class="line">  func1();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  func2();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>该函数便于让程序员进行分支预测，从而优化程序执行性能，在Linux内核中<code>likely</code>和<code>unlikely</code>的宏定义便是调用该函数实现的。<br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> likely(x)      __builtin_expect(!!(x), 1)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> unlikely(x)    __builtin_expect(!!(x), 0)</span></span><br></pre></td></tr></table></figure></p>
+<h1 id="7-匿名函数-Lambda表达式"><a href="#7-匿名函数-Lambda表达式" class="headerlink" title="7. 匿名函数(Lambda表达式)"></a>7. 匿名函数(Lambda表达式)</h1><p>匿名函数，即没有函数名的函数，是函数的一种形式。<br>在C语言中没有原生对匿名函数的支持，但GCC编译器的GNU扩展功能可以在函数中定义函数，因此可以用宏定义来模拟实现<code>Lambda表达式</code>。<br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> LAMBDA(_return_type, _arg_func_body) \</span></span><br><span class="line"><span class="meta">(&#123;_return_type __anonymous_fn _arg_func_body __anonymous_fn;&#125;)</span></span><br></pre></td></tr></table></figure><br><code>_return_type</code>即是该<code>Lambda</code>表达式的返回类型，<code>_arg_func_body</code>即是该匿名函数的参数列表和函数体，<code>__anonymous_fn</code>是这个代码块中的局部变量，用以表示该<code>Lambda</code>表达式的函数名称，并在后续进行调用。下面是使用示例:<br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> result = LAMBDA(<span class="type">int</span>, (<span class="type">int</span> a, <span class="type">int</span> b)&#123;<span class="keyword">return</span> a * b;&#125;)(<span class="number">5</span>, <span class="number">6</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;result = %d\n&quot;</span>, result);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>GCC编译器默认是使用GNU扩展的，你可以通过添加<code>-std=cxx</code>和<code>-pedantic</code>来强制GCC编译器使用C标准语法来编译程序。</p>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>C</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Linux笔记】简介</title>
+    <url>/posts/20230629/135145.html</url>
+    <content><![CDATA[<div class="note blue no-icon flat"><p>本文为刚毕业参加工作时，初学Linux操作系统时做的一些笔记，适合初学者读阅，内容不保证百分百正确，若您对其中的描述有任何疑问可在留言板块进行留言。</p>
+<p>以下为我使用的C语言的运行和编译环境：<br>System Version : <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version : <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version : <a href="https://gcc.gnu.org/gcc-11/">11.3.0</a><br>STDC Version : <a href="https://www.open-std.org/JTC1/SC22/WG14/">201710L</a></p>
+<p><strong>摘要：</strong> Linux系统、Linux内核、内核架构的简述。</p>
+</div>
+<h1 id="1-什么是-Linux"><a href="#1-什么是-Linux" class="headerlink" title="1. 什么是 Linux"></a>1. 什么是 Linux</h1><p><code>Linux</code> 是一套免费使用和自由传播的类 <code>Unix</code> 操作系统，是一个基于<code>POSIX</code> 标准和 <code>UNIX</code> 的多用户、多任务、支持多线程和多CPU的操作系统。它能运行主要的<code>UNIX</code>工具软件、应用程序和网络协议。目前支持32位和64位的处理器。<code>Linux</code> 继承了 <code>UNIX</code> 以网络为核心的设计思想，是一个性能稳定的多用户网络操作系统。通常所说的 Linux 是指 <span class='nota' data-nota='GNU's Not Unix'>GNU/Linux</span>。</p>
+<p>Linux 存在着许多不同的 Linux 发行版本，但它们都使用了 <span class='nota' data-nota='Linux kernel 是在通用性公开许可证(General Public License GPL)版权协议下发行的遵循 POSIX 标准的操作系统内核'>Linux kernel</span>。Linux有很多发行版, 发行版是指某些公司、组织或个人把 Linux 内核、源代码及相关的应用程序组织在一起发行。经典的 Linux 发行版有 RedHat、SlackWare、Debian等，目前流行的 Linux 发行版基本上都是基于这些发行版的，例如：</p>
+<ul>
+<li><a href="https://www.debian.org/index.zh-cn.html">Debian</a></li>
+<li><a href="https://mxlinux.org/">MX Linux</a></li>
+<li><a href="https://manjaro.org/">Manjaro</a></li>
+<li><a href="https://ubuntu.com/">Ubuntu</a></li>
+<li><a href="https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux">Red Hat Enterprise Linux</a></li>
+<li><a href="https://www.centos.org/centos-linux/">CentOS Linux</a></li>
+</ul>
+<p>严格来讲，Linux操作系统指的是“linux内核+各种软件”，Linux这个词只表示Linux内核，但实际上人们已经习惯了用Linux来形容整个基于Linux内核，并且使用GNU工程各种工具和数据库的操作系统。</p>
+<h2 id="1-1-Linux-与-POSIX-标准"><a href="#1-1-Linux-与-POSIX-标准" class="headerlink" title="1.1. Linux 与 POSIX 标准"></a>1.1. Linux 与 POSIX 标准</h2><p>支持<span class='nota' data-nota='可移植操作系统接口(Portable Operating System Interface of UNIX)'>POSIX</span>标准是Linux能获取成功的一个重要因素，POSIX是<span class='nota' data-nota='电气和电子工程师协会'>IEEE</span>为要在各种UNIX操作系统上运行的软件而定义的一系列API标准的总称，其正式称呼为IEEE 1003，国际标准名称为ISO/IEC 9945。<br>在操作系统发展初期，各大提供Unix操作系统的厂商会将自己新的，与其他系统不兼容的特性加入Unix中，来使他们的操作系统更好使用和与众不同，这样混乱的局面非常不利于操作系统和软件生态的发展。为了提高各个系统的兼容性和软件的可移植性，IEEE开始组织进行Unix的标准化开发，后来这个标准被命名为 <strong><code>POSIX</code></strong>，这套标准涵盖了系统调用的C语言接口、Shell程序和工具、线程及网络编程等方面，为系统的兼容性和应用程序的移植提供了很好的支持。<br>Linux的设计者Linus在编写Linux内核时，POSIX标准正处在投票敲定阶段，该标准为Linus提供了极为重要的信息，使得Linux能在标准的指导下进行开发，并做到与大部分Unix进行兼容。正是由于支持POSIX标准，当时开发的很多Unix上的软件可以很方便的移植到Linux系统上，使得Linux系统在当时得到很多开发者的支持，甚至超越Unix。如今，Windows也在其系统的接口中越来越多的支持POSIX标准。</p>
+<h1 id="2-Linux内核"><a href="#2-Linux内核" class="headerlink" title="2. Linux内核"></a>2. Linux内核</h1><p>类 Unix 操作系统中用于资源分配和硬件管理的程序称为 <strong><code>内核</code></strong>。Linux内核的作用简单来说，就是管理着系统上的所有硬件，并为上层程序提供接口，是应用程序与底层硬件沟通的桥梁。<br>Linux内核源码采用<span class='nota' data-nota='GNU通用公共许可证'>GPL协议</span>，任何组织和个人都可以免费使用，其内核版本由Linux基金会管理与发布，官网为<a href="https://www.kernel.org">Linux keernel</a>，目前内核的最新版本已经来到了<a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.5.7.tar.xz">6.5.7</a>。</p>
+<h2 id="2-1-GNU-Linux系统架构"><a href="#2-1-GNU-Linux系统架构" class="headerlink" title="2.1. GNU/Linux系统架构"></a>2.1. GNU/Linux系统架构</h2><details class="folding-tag" ><summary> Linux系统架构简图 </summary>
+              <div class='content'>
+              <p>该图参考自《Advanced Programming in Unix Environment》</p><p><img src="https://source.k0191.cyou/img/local/linux-framework.png" alt=""></p>
+              </div>
+            </details>
+<p>从上图可以看出，Linux内核将硬件包含在内，将所有的硬件抽象为统一的虚拟接口，而用户进程程序不需要知道底层有什么物理硬件，通过Linux系统提供的系统调用便可访问各个物理硬件。</p>
+<p>Linux内核主要由以下几个部分组成:</p>
+<ul>
+<li><span class='nota' data-nota='SCHED'>进程调度器</span> 负责控制对CPU的进程访问，调度程序执行相应的调度策略，确保进程公平地访问CPU。</li>
+<li><span class='nota' data-nota='MM'>内存管理器</span> 允许多个进程安全地共享设备的主内存系统，使用虚拟内存来创建进程。</li>
+<li><span class='nota' data-nota='VFS'>虚拟文件系统</span> 通过为所有设备提供通用文件接口来抽象化各种硬件设备的详细信息。</li>
+<li><span class='nota' data-nota='NET'>网络接口</span> 对各种网络标准和网络硬件的访问接口。</li>
+<li><span class='nota' data-nota='IPC'>进程间通信</span> Linux系统上进程间通信的多种机制。</li>
+</ul>
+<p>上述各个部分间相互依赖，组合形成一个个功能模块。例如：进程调度器使用内存管理器为各个进程创建虚拟内存，调整与硬件的内存映射，虚拟文件系统通过网络接口来支持网络文件系统，进程间通信通过内存管理器来支持共享内存的通信机制等。</p>
+<h2 id="2-2-微内核与宏内核"><a href="#2-2-微内核与宏内核" class="headerlink" title="2.2. 微内核与宏内核"></a>2.2. 微内核与宏内核</h2><div class="tabs" id="宏内核与微内核"><ul class="nav-tabs"><li class="tab active"><button type="button" data-href="#宏内核与微内核-1">宏内核</button></li><li class="tab"><button type="button" data-href="#宏内核与微内核-2">微内核</button></li></ul><div class="tab-contents"><div class="tab-item-content active" id="宏内核与微内核-1"><p>简单来说，就是把很多功能都集成进内核，除了最基本的进程管理、内存管理外，文件系统，驱动，网络协议等都在内核里面。将内核从整体上作为一个大过程实现，并同时运行在一个单独的地址空间中。</p>
+<ul>
+<li>优点：系统效率高，所有的内核服务都在一个地址空间中运行，相互之间直接调用函数，简单高效。</li>
+<li>缺点：系统稳定性差，一个服务上出现BUG会导致整个系统挂掉。</li>
+</ul><button type="button" class="tab-to-top" aria-label="scroll to top"><i class="fas fa-arrow-up"></i></button></div><div class="tab-item-content" id="宏内核与微内核-2"><p>在内核中只有最基本的进程调度、内存管理。驱动、文件系统等都是用户态的守护进程去实现的，微内核中功能被划分成独立的过程，过程间通过IPC进行通信。模块化程度高，一个服务失效不会影响另外一个服务。</p>
+<ul>
+<li>优点：系统稳定性高，一个服务进程出现BUG挂掉，不会影响到其他服务进程，系统可进行自拯救。</li>
+<li>缺点：系统效率低，数据吞吐量低，由于大部分服务进程在用户态实现，进程间传递消息会十分影响程序的执行效率和接口容量。</li>
+</ul><button type="button" class="tab-to-top" aria-label="scroll to top"><i class="fas fa-arrow-up"></i></button></div></div></div>
+<p>Linux就是一个宏内核结构，所有的<span class='nota' data-nota='内存管理、文件管理、设备驱动程序等'>子系统</span>都被打包到一个执行程序中，处于同一个内存空间内，但同时他也吸收了微内核的优点：模块化设计，支持动态装载内核模块。</p>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【C语言笔记】表达式</title>
+    <url>/posts/20230629/134737.html</url>
+    <content><![CDATA[<div class="note blue no-icon flat"><p>本文为刚毕业参加工作时，初学C语言时做的一些笔记，适合初学者读阅，内容不保证百分百正确，若您对其中的描述有任何疑问可在留言板块进行留言。</p>
+<p>以下为我使用的C语言的运行和编译环境：<br>System Version : <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version : <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version : <a href="https://gcc.gnu.org/gcc-11/">11.3.0</a><br>STDC Version : <a href="https://www.open-std.org/JTC1/SC22/WG14/">201710L</a></p>
+<p><strong>摘要：</strong> 简述了表达式的组成，类别，以及相关语法，解释什么是左值和右值。</p>
+</div>
+<h1 id="1-表达式的定义"><a href="#1-表达式的定义" class="headerlink" title="1. 表达式的定义"></a>1. 表达式的定义</h1><p>表达式是由一系列运算符 <code>operators</code> 和操作数 <code>operands</code> 组成的。运算符指明了要进行何种运算和操作，而操作数则是运算符操作的对象。在C语言中，常量、变量、函数调用以及按C语言语法规则用运算符把运算数连接起来的式子都是合法的表达式。</p>
+<ul>
+<li><strong>任何表达式都具有值和类型的两种属性</strong></li>
+<li><strong>在表达式结束后加上分号的句子称为<code>表达式语句</code></strong></li>
+</ul>
+<p><strong>表达式的语法规则</strong><br>[operands] [operators] [operands] …<br>表达式可以是单个的常量或变量，也可是多个常量、变量组合在一起的更复杂的表达式。</p>
+<p><strong>表达式的作用</strong></p>
+<ul>
+<li>数值计算</li>
+<li>指明数据对象</li>
+<li>产生副作用 </li>
+<li>以上目的的结合</li>
+</ul>
+<h2 id="1-1-运算符"><a href="#1-1-运算符" class="headerlink" title="1.1 运算符"></a>1.1 运算符</h2><p>运算符是整个表达式的核心，它代表着表达式需要进行怎样的逻辑运算，预示着表达式的行为和结果，C语言中可用的运算符如下。</p>
+<details class="folding-tag" green><summary> 查看运算符优先级列表 </summary>
+              <div class='content'>
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"><caption>运算符优先级列表</caption>  <tr>    <th width="15%" bgcolor="#66ccff"  align="center">优先级</th>    <th width="15%" bgcolor="#66ccff"  align="center">运算符</th>    <th width="30%" bgcolor="#66ccff"  align="center">含义</th>    <th bgcolor="#66ccff"  align="center">使用形式</th>    <th width="15%" bgcolor="#66ccff"  align="center">结合方向</th>  </tr>  <tr>    <th  rowspan="5">1</th>    <th rowspan="2"> () </th>    <th> 优先级运算符 </th>    <th> (表达式) </th>    <th> 块结合 </th>  </tr>  <tr>    <th> 函数调用运算符 </th>    <th> func_addr() </th>    <th rowspan="4"> 自左至右 </th>  </tr>  <tr>    <th> [] </th>    <th> 下标运算符 </th>    <th> ptr[index] </th>  </tr>  <tr>    <th> -> </th>    <th> 指向成员运算符 </th>    <th> struct_ptr->member </th>  </tr>  <tr>    <th> . </th>    <th> 取成员运算符 </th>    <th> struct_obj.member </th>  </tr>  <tr>    <th  rowspan="9">2</th>    <th> (type) </th>    <th> 类型强制转换运算符 </th>    <th> (int)8.2 </th>    <th> 块结合 </th>  </tr>  <tr>    <th> - </th>    <th> 负号运算符 </th>    <th> -var </th>    <th rowspan="8"> 自右至左 </th>  </tr>  <tr>    <th> ++ </th>    <th> 自增运算符 </th>    <th> var++/++var </th>  </tr>  <tr>    <th> -- </th>    <th> 自减运算符 </th>    <th> var--/--var </th>  </tr>  <tr>    <th> * </th>    <th> 解引用运算符 </th>    <th> *ptr </th>  </tr>  <tr>    <th> & </th>    <th> 取地址运算符 </th>    <th> &var_name </th>  </tr>  <tr>    <th> ! </th>    <th> 逻辑非运算符 </th>    <th> !expr </th>  </tr>  <tr>    <th> ~ </th>    <th> 按位取反运算符 </th>    <th> ~expr </th>  </tr>  <tr>    <th> sizeof </th>    <th> 内存占用长度运算符 </th>    <th> sizeof(var)  </th>  </tr>  <tr>    <th  rowspan="3">3</th>    <th> * </th>    <th> 乘法运算符 </th>    <th> expr * expr </th>    <th  rowspan="3"> 自左至右 </th>  </tr>  <tr>    <th> / </th>    <th> 除法运算符 </th>    <th> expr / expr </th>  </tr>  <tr>    <th> % </th>    <th> 取模运算符 </th>    <th> expr % expr </th>  </tr>  <tr>    <th  rowspan="2">4</th>    <th> + </th>    <th> 加法运算符 </th>    <th> expr + expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> - </th>    <th> 减法运算符 </th>    <th> expr - expr </th>  </tr>  <tr>    <th  rowspan="2">5</th>    <th> << </th>    <th> 左移运算符 </th>    <th> var << expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> >> </th>    <th> 右移运算符 </th>    <th> var >> expr </th>  </tr>  <tr>    <th  rowspan="4">6</th>    <th> > </th>    <th> 大于判断运算符 </th>    <th> expr > expr </th>    <th  rowspan="4"> 自左至右 </th>  </tr>  <tr>    <th> >= </th>    <th> 大于等于判断运算符 </th>    <th> expr >= expr </th>  </tr>  <tr>    <th> < </th>    <th> 小于判断运算符 </th>    <th> expr < expr </th>  </tr>  <tr>    <th> <= </th>    <th> 小于等于判断运算符 </th>    <th> expr <= expr </th>  </tr>  <tr>    <th  rowspan="2">7</th>    <th> == </th>    <th> 等于判断运算符 </th>    <th> expr == expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> != </th>    <th> 不等于判断运算符 </th>    <th> expr != expr </th>  </tr>  <tr>    <th  rowspan="1">8</th>    <th> & </th>    <th> 按位与运算符 </th>    <th> expr & expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">9</th>    <th> ^ </th>    <th> 按位异或运算符 </th>    <th> expr ^ expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">10</th>    <th> | </th>    <th> 按位或运算符 </th>    <th> expr | expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">11</th>    <th> && </th>    <th> 逻辑与运算符 </th>    <th> expr && expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">12</th>    <th> || </th>    <th> 逻辑或运算符 </th>    <th> expr || expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">13</th>    <th> ？: </th>    <th> 条件运算符 </th>    <th> expr1 ？ expr2 : expr3 </th>    <th  rowspan="1"> 自右至左 </th>  </tr>  <tr>    <th  rowspan="11">14</th>    <th> = </th>    <th> 赋值运算符 </th>    <th> var = expr </th>    <th  rowspan="11"> 自右至左 </th>  </tr>  <tr>    <th> *= </th>    <th> 乘后赋值运算符 </th>    <th> var *= expr </th>  </tr>  <tr>    <th> /= </th>    <th> 除后赋值运算符 </th>    <th> var /= expr </th>  </tr>  <tr>    <th> %= </th>    <th> 取模后赋值运算符 </th>    <th> var %= expr </th>  </tr>  <tr>    <th> += </th>    <th> 相加后赋值运算符 </th>    <th> var += expr </th>  </tr>  <tr>    <th> -= </th>    <th> 相减后赋值运算符 </th>    <th> var -= expr </th>  </tr>  <tr>    <th> <<= </th>    <th> 左移后赋值运算符 </th>    <th> var <<= expr </th>  </tr>  <tr>    <th> >>= </th>    <th> 右移后赋值运算符 </th>    <th> var >>= expr </th>  </tr>  <tr>    <th> &= </th>    <th> 按位与后赋值运算符 </th>    <th> var &= expr </th>  </tr>  <tr>    <th> ^= </th>    <th> 按位异或后赋值运算符 </th>    <th> var ^= expr </th>  </tr>  <tr>    <th> |= </th>    <th> 按位或后赋值运算符 </th>    <th> var |= expr </th>  </tr>  <tr>    <th  rowspan="1">15</th>    <th> , </th>    <th> 逗号运算符 </th>    <th> expr , expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th colspan="5" align="left">注:同一优先级的运算符，运算顺序由其结合方向决定</th>  </tr></table>
+              </div>
+            </details>
+<h2 id="1-2-操作数"><a href="#1-2-操作数" class="headerlink" title="1.2. 操作数"></a>1.2. 操作数</h2><p>操作数就是表达式的操作对象，是表达式进行表达的窗口。任何变量或常量都可以是操作数，但在不同的表达式类型中，有其相应的语法规则进行约束。</p>
+<h1 id="2-常量表达式"><a href="#2-常量表达式" class="headerlink" title="2.常量表达式"></a>2.常量表达式</h1><p>常量表达式的特点</p>
+<ul>
+<li>表达式的值不会改变</li>
+<li>在编译期间可以进行确定的值</li>
+</ul>
+<details class="folding-tag" green><summary> e.g. 常量表达式示例 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> a = <span class="number">1</span>;          <span class="comment">//常量表达式</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> b = a + <span class="number">1</span>;      <span class="comment">//由于变量a是常量, 所以该表达式也为常量表达式</span></span><br><span class="line"><span class="type">int</span> c = <span class="number">3</span>;                <span class="comment">//非常量表达式, 变量c非常量</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> d = function(); <span class="comment">//非常量表达式, function()的值在编译期间无法得到</span></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<h1 id="3-左值与右值"><a href="#3-左值与右值" class="headerlink" title="3.左值与右值"></a>3.左值与右值</h1><p>左值与右值的概念来自于赋值表达式，左右值是表达式的值属性的一种描述，在更为复杂的 <strong><code>C++</code></strong> 语法中，左右值的概念更为重要，理解好左值与右值对理解程序以及语法的设计很有帮助。</p>
+<h2 id="3-1-C语言中左值与右值的定义"><a href="#3-1-C语言中左值与右值的定义" class="headerlink" title="3.1. C语言中左值与右值的定义"></a>3.1. C语言中左值与右值的定义</h2><p>C99 标准中定义<code>lvalue</code>为具有<span class='nota' data-nota='对象即是指一块内存区域'>对象型别</span>或除<code>void</code>外的<span class='nota' data-nota='不完整型别是指可以用来描述一个标识符类别，却无法确认其标识符内存大小的型别'>不完整型别</span>的表达式，也可以理解为一个左值表达式一定表示了一块内存区域。可以使用取地址运算符 <strong><code>&amp;</code></strong> 的表达式一定是左值表达式。<code>rvalue</code>不指向任何对象，仅表示一个值。</p>
+<p>在最常见的赋值表达式中，即含有 <strong><code>=</code></strong> 赋值运算符的表达式，若需要该表达式合法，则需要满足</p>
+<ul>
+<li><strong><code>=</code></strong> 号左侧的表达式必须是左值</li>
+<li><strong><code>=</code></strong> 号右侧的表达式可以是左值也可以是右值</li>
+</ul>
+<p>左值的特点</p>
+<ul>
+<li>可通过取地址运算符获取左值的地址。</li>
+<li>可出现在赋值或组合赋值符号的左边或右边。</li>
+<li>可修改的左值可用作赋值运算符的左操作数。</li>
+</ul>
+<p>右值的特点</p>
+<ul>
+<li>无法对右值进行取地址操作。</li>
+<li>右值不能放在赋值或者组合赋值符号的左边。</li>
+<li>右值可以用来初始化const左值引用。</li>
+</ul>
+<h2 id="3-2-左值与运算符"><a href="#3-2-左值与运算符" class="headerlink" title="3.2. 左值与运算符"></a>3.2. 左值与运算符</h2><ul>
+<li><p>变量名、数组名、函数名<br>被<code>const</code> 修饰符修饰的变量名，数组名和函数名都是不可被修改的左值。</p>
+</li>
+<li><p>字符串常量<br>C语言中的字符串常量是一个左值，可以对其进行取地址。<br>例如：字符串 <code>&quot;hello world&quot;</code>, 对该字符串取地址是合法的 <code>&amp;&quot;hello world&quot;</code>。</p>
+</li>
+<li><p>解引用操作符表达式的结果<br>解引用操作符会产生一个左值，但其操作数可以是左值或右值,即可以对解引用操作符的对象进行赋值操作。</p>
+<details class="folding-tag" green><summary> e.g. 解引用 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">3</span>;</span><br><span class="line"><span class="type">int</span> *ptr = &amp;a;</span><br><span class="line">*ptr = <span class="number">2</span>;      <span class="comment">//*ptr 是左值</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">  *((int *)0x7ffead2b47a0)是一个左值</span></span><br><span class="line"><span class="comment">  但对0x7ffead2b47a0这个地址的值的含义尚不明确</span></span><br><span class="line"><span class="comment">  若该区域没有被引用，则会使程序发生崩溃</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">*((<span class="type">int</span> *)<span class="number">0x7ffead2b47a0</span>) = <span class="number">1</span>; </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+</ul>
+<h2 id="3-3-右值与运算符"><a href="#3-3-右值与运算符" class="headerlink" title="3.3. 右值与运算符"></a>3.3. 右值与运算符</h2><ul>
+<li><p>各种基本数据类型的字面常量<br>字面常量不一定会占据存储空间，编译器可能会将这些字面常量当做立即数进行处理，故字面常量是右值。</p>
+<details class="folding-tag" green><summary> e.g. 字面常量 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">1</span>;         <span class="comment">// 1为字面常量，是右值</span></span><br><span class="line"><span class="type">float</span> b = <span class="number">1.1f</span>;    <span class="comment">// 1.1为字面常量，是右值</span></span><br><span class="line"><span class="type">char</span> c = <span class="string">&#x27;h&#x27;</span>;      <span class="comment">// &#x27;h&#x27;为字面常量，是右值</span></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+<li><p>枚举常量<br>编译器常常将枚举常量当做是值确认的整形的字面常量进行处理，在编译阶段，枚举常量就会被替换为字面常量，故枚举常量也是右值。</p>
+<details class="folding-tag" green><summary> e.g. 枚举常量 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">week</span>&#123;</span>Mon, Tues, Wed, Thur, Fir, Sat, Sun&#125;;</span><br><span class="line">week tody = Sun;   <span class="comment">// Sun为枚举常量，是右值</span></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+<li><p>双目运算符的运算结果<br>C语言中，双目运算符的操作数可以是左值或者右值，但其运算的结果必然是右值。</p>
+</li>
+<li><p>函数调用表达式的返回值<br>C语言中，函数调用表达式的值总是一个右值，无法对其进行取地址。</p>
+<details class="folding-tag" green><summary> e.g. 函数返回值 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">func</span><span class="params">(<span class="type">void</span>)</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> *a = &amp;func(); <span class="comment">//这是不合法的</span></span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+</li>
+</ul>
+<h1 id="4-逗号表达式"><a href="#4-逗号表达式" class="headerlink" title="4. 逗号表达式"></a>4. 逗号表达式</h1><p>逗号表达式是指使用逗号运算符的表达式，用于将表达式连接起来，是一种使编程更简洁的语法。其一般形式为：<br><code>[表达式1], [表达式2], [...]</code></p>
+<details class="folding-tag" green><summary> e.g. 逗号表达式 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">10</span>;</span><br><span class="line"><span class="type">int</span> b = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">a = <span class="number">2</span>*a, <span class="number">4</span>*a;    <span class="comment">//结果为 a = 20, 赋值运算符的优先级高于逗号运算符</span></span><br><span class="line"></span><br><span class="line">b = (<span class="number">2</span>*b, <span class="number">4</span>*b);  <span class="comment">//结果为 b = 40</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//不是逗号表达式，这里的逗号并不是被用作逗号运算符，而是被用作传递实参的分隔符</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;a = %d, b = %d\n&quot;</span>, a, b);</span><br><span class="line"></span><br><span class="line"><span class="comment">// (a, b)为逗号表达式, 结果为 a = 40, b = 40;</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;a = %d, b = %d\n&quot;</span>, (a, b), b);</span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<p>上述例子中 <code>4 * a</code> 和 <code>2 * b</code> 均是无意义的表达式，其没有产生任何的<code>副作用</code>，若在编译时打开 <strong><code>-Wall</code></strong> 选项，便会看见 <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-value">-Wunused-value</a> 的警告。</p>
+<h1 id="4-1-常见用法"><a href="#4-1-常见用法" class="headerlink" title="4.1. 常见用法"></a>4.1. 常见用法</h1><details class="folding-tag" green><summary> e.g. 同类型变量声明 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a, b, c, d, e;</span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<details class="folding-tag" green><summary> e.g. 循坏语句 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>, j = <span class="number">1</span>; i &lt; <span class="number">2</span> &amp;&amp; j &lt; <span class="number">3</span>; i++, j++)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span>(i++, i &lt; <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<details class="folding-tag" green><summary> e.g. return 语句 </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">return</span> a = <span class="number">1</span>, ... , a;</span><br></pre></td></tr></table></figure>
+              </div>
+            </details>
+<h1 id="5-前缀-与后缀"><a href="#5-前缀-与后缀" class="headerlink" title="5. 前缀 ++ / -- 与后缀 ++ / --"></a>5. 前缀 <code>++</code> / <code>--</code> 与后缀 <code>++</code> / <code>--</code></h1><p>前缀形式的等效表达式如下:<br><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span>&amp; <span class="type">int</span>::<span class="keyword">operator</span>++()</span><br><span class="line">&#123;</span><br><span class="line">  *<span class="keyword">this</span> += <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>前缀形式返回的是自身加1后的值。</p>
+<p>后缀形式的等效表达式如下:<br><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> <span class="type">int</span>::<span class="keyword">operator</span>++(<span class="type">int</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> oldValue = *<span class="keyword">this</span>;</span><br><span class="line">  ++(*<span class="keyword">this</span>);</span><br><span class="line">  <span class="keyword">return</span> oldValue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>后缀形式返回保存的先前自身的值，自身已进行加1操作。</p>
+<p>这里举例 <code>C++</code> 的实现是因为在 <code>C++</code> 的语法中，<strong>前缀操作是一个左值，而后缀操作是一个右值</strong>，这一点与C有着区别，C中不管是前缀操作还是后缀操作，其都是右值。</p>
+<details class="folding-tag" green><summary> e.g. </summary>
+              <div class='content'>
+              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">3</span>;</span><br><span class="line">++a = <span class="number">4</span>;</span><br></pre></td></tr></table></figure><p>使用gcc编译，会出现 <code>lvalue required as left operand of assignment</code> 的报错，而使用g++编译则不会。</p>
+              </div>
+            </details>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>C</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Linux笔记】Shell</title>
+    <url>/posts/20230629/135252.html</url>
+    <content><![CDATA[<div class="note blue no-icon flat"><p>本文为刚毕业参加工作时，初学Linux操作系统时做的一些笔记，适合初学者读阅，内容不保证百分百正确，若您对其中的描述有任何疑问可在留言板块进行留言。</p>
+<p>以下为我使用的C语言的运行和编译环境：<br>System Version : <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version : <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version : <a href="https://gcc.gnu.org/gcc-11/">11.3.0</a><br>STDC Version : <a href="https://www.open-std.org/JTC1/SC22/WG14/">201710L</a></p>
+<p><strong>摘要：</strong> Shell编程、bash语法、常用的Linux命令。</p>
+</div>
+<h1 id="1-Shell简介"><a href="#1-Shell简介" class="headerlink" title="1. Shell简介"></a>1. Shell简介</h1><p>在Linux系统与用户之间，有一个外壳程序，这个程序就是 <strong><code>shell</code></strong>。shell程序是由C语言编写的，它使用户可以更加高效、安全、低成本地使用Linux内核。shell 本身并不是内核的一部分，它只是使用Linux的系统调用编写的一个应用程序。当用户使用终端设备连接上Linux系统后，shell程序便会监视该终端的任何变化，用户在终端设备上进行的任何输入，都会被传递给shell程序，由shell程序进行解析、处理，再进一步传递给内核进行处理，最后将输出传递到终端上。由此可见，shell程序是用户与Linux内核交互的桥梁。<br>那些用户在终端上输入的、可被shell程序解析并处理的文本，被称为 <strong><code>Shell命令</code></strong>，而进行处理的shell程序被称为 <strong><code>Shell解释器</code></strong>。当把一些Shell命令有逻辑性的组织在一个文件中，再让Shell解释器去解析这个文件执行，这个文件就被称为 <strong><code>Shell脚本</code></strong>，编写该脚本的语言，就被称为 <strong><code>Shell编程语言</code></strong> 。<br>综述，Shell可以说是一个程序，是一个脚本的解释器，也是一个编程语言。</p>
+<div class="note info simple"><p><strong>编译型语言和解释型语言的区别</strong><br>编译型语言在程序运行前要将所有代码都翻译为二进制的可执行文件，在运行时是不需要源码的。<emp>完成编译过程的软件就叫做编译器</emp>。C/C++、Go、汇编等语言都是编译型语言。</p>
+<p>解释型语言是在执行时，根据源码一边翻译一边执行，不用等所有代码都翻译完才去执行，不会根据源码文件生成任何可执行文件。<emp>完成解释过程的软件就叫做解释器</emp>。Shell、Java、Python等语言都是解释型语言。</p>
+</div>
+<h1 id="2-Shell解释器"><a href="#2-Shell解释器" class="headerlink" title="2. Shell解释器"></a>2. Shell解释器</h1><p>在Linux中有很多类型的shell，不同的shell具备不同的功能，选用的shell决定了脚本中函数的语法以及和支持的数据类型。在不同的Linux发行版本中，所默认使用的shell不同，可以在终端中使用 <kbd>cat /etc/shells</kbd>命令查看当前操作系统上有多少种shell。</p>
+<p>目前有很多类型的shell，他们都有着自己的特点和用途，以下是常用的shell类型</p>
+<ul>
+<li>sh(Bourne Shell)：由<span class='nota' data-nota='该shell就是以他的名称为命名的，伯恩shell'>Stephen Bourne</span>编写的shell程序，是Unix上标准的shell，也是第一个流行的Shell。</li>
+<li>csh：由<span class='nota' data-nota='创立了BSD操作系统，开发了vi编辑器，sun公司创始人之一'>Bill Joy</span>设计，语法与C语言语法类似，故称为csh。</li>
+<li>ash：一个简单的轻量级的Shell，占用资源少，适合运行于低内存环境。</li>
+<li>bash(Bourne Again Shell)：由GNU组织开发，保持了对Bourne Shell的兼容性，功能也更强大，是Linux发行版的默认Shell。</li>
+<li>dash(Debian Almquist shell)：从NetBSD派生而来的轻量级shell，相较于bash，启动更快，更符合POSIX标准，但功能特性更少。</li>
+</ul>
+<p>在很多Linux系统中，<kbd>/bin/sh</kbd>是指向 <kbd>/bin/bash</kbd> 的。</p>
+<h1 id="3-Shell脚本编写"><a href="#3-Shell脚本编写" class="headerlink" title="3. Shell脚本编写"></a>3. Shell脚本编写</h1><p>在linux系统中，shell脚本以<code>.sh</code>作为文件的后缀名，在其文件的开头，往往会有<kbd>#!/bin/sh</kbd>或<kbd>#!/bin/bash</kbd>的一行，该语句含义为：选择解释该脚本文件的解释器。</p>
+<h2 id="3-1-选择Shell解释器"><a href="#3-1-选择Shell解释器" class="headerlink" title="3.1. 选择Shell解释器"></a>3.1. 选择Shell解释器</h2><p>在终端中，可以输入以下指令来查看当前终端所使用的Shell<br><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env | grep SHELL</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">或者</span></span><br><span class="line">ps -p $$</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">更改终端的Shell设置</span></span><br><span class="line">chsh -s /bin/bash</span><br></pre></td></tr></table></figure></p>
+<p>在脚本文件中选择脚本解释器，在文件的开头以下面的格式进行选择<br><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!&lt;shell path&gt;</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">e.g</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">选择/bin目录下的sh作为脚本的解释器</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span> </span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">选择/usr/local/bin/目录下的dash作为脚本的解释器</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/usr/local/bin/dash</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="3-2-Shell脚本语法"><a href="#3-2-Shell脚本语法" class="headerlink" title="3.2. Shell脚本语法"></a>3.2. Shell脚本语法</h2><p>在大多数的Linux系统中，bash是默认使用的shell，其功能也非常强大。下述的语法皆是该解释器所支持的语法格式。</p>
+<div class="note info simple"><p><strong>Shell脚本中的注释</strong><br>在Shell脚本中，仅支持单行注释，且不支持局部注释，如果某行的开头为<kbd>#</kbd>符号，<kbd>#!</kbd>除外，则该行会被解释器直接忽略。<br>可以通过<kbd>:</kbd>空命令和<kbd>&lt;&lt;</kbd>输入重定向符号来达到多行注释的效果。</p>
+<details class="folding-tag" cyan><summary> e.g. </summary>
+              <div class='content'>
+              <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span></span><br><span class="line"></span><br><span class="line">ls -l</span><br><span class="line">:&lt;&lt;!</span><br><span class="line">这是一段多行注释</span><br><span class="line">这之中的内容会输入给[:]空命令，而该命令永远返回0</span><br><span class="line">[&lt;&lt;]是输入重定向符号，后面的[!]是一个标记符，用于表示输入在哪个地方结束，可以是任意多个字符</span><br><span class="line">若在注释中出现了被反引号“`”包含的内容，改内容会被当做shell语句的内容，在被输入之前执行</span><br><span class="line">下面被反引号包含的语句就会被执行，会在该脚本的工作目录下生成test.txt文件</span><br><span class="line">`touch test.txt`</span><br><span class="line">所以使用该多行注释时一定要注意</span><br><span class="line">!</span><br><span class="line"></span><br><span class="line">ls -l</span><br></pre></td></tr></table></figure>
+              </div>
+            </details></div>
+<h3 id="3-2-1-Shell变量"><a href="#3-2-1-Shell变量" class="headerlink" title="3.2.1 Shell变量"></a>3.2.1 Shell变量</h3><p>在解释型语言中，在定义变量时通常不需要指明其数据类型，直接赋值即可，在bash中也是如此。<br>在bash中，每个变量的值都是字符串，无论是否使用引号，值都是以字符串的形式存储。<br>在定义变量时，<kbd>=</kbd> 周围不能有空格，若变量中的值有空格。需要使用单引号或双引号括起来。<br>若要将某一命令的返回结果返回给变量，可以使用反引号<kbd>`</kbd> 或 <kbd>$()</kbd>将命令包含起来。<br><details class="folding-tag" cyan><summary> e.g. </summary>
+              <div class='content'>
+              <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">VARIABLE1=Hello</span><br><span class="line">VARIABLE2=world</span><br><span class="line">VARIABLE3=&quot;Hello world&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">双引号中的变量被展开 VARIABLE4=Hello World</span></span><br><span class="line">VARIABLE4=&quot;$VARIABLE1 $VARIABLE2&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">单引号中的字符不进行展开 VARIABLE5=<span class="variable">$VARIABLE1</span> <span class="variable">$VARIABLE2</span></span></span><br><span class="line">VARIABLE5=&#x27;$VARIABLE1 $VARIABLE2&#x27;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">VARIABLE6的值为文件/proc/meminfo的内容</span></span><br><span class="line">VARIABLE6=`cat /proc/meminfo`</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">VARIABLE7的值为文件/proc/cpuinfo的内容</span></span><br><span class="line">VARIABLE7=$(cat /proc/cpuinfo)</span><br></pre></td></tr></table></figure><p>在单引号中的内容不会被shell进行再次解析，全部都被作为普通字符。<br>在双引号中的内容会被shell先执行其中的变量或命令，再展开为普通字符。</p>
+              </div>
+            </details></p>
+<p><strong>环境变量</strong><br>在Shell中存在有<span class='nota' data-nota='也有三种变量的分类:系统变量、环境变量和本地变量'>两种变量</span>，环境变量与本地变量，这里的分类主要是根据变量的生命周期进行划分的，以下是常用的环境变量。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">环境变量</th>
+<th style="text-align:center">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$PWD</td>
+<td style="text-align:center">当前Shell所在的工作目录</td>
+</tr>
+<tr>
+<td style="text-align:center">$PATH</td>
+<td style="text-align:center">当前Shell环境下，系统查找可执行程序的路径</td>
+</tr>
+<tr>
+<td style="text-align:center">$SHELL</td>
+<td style="text-align:center">当前终端使用的shell程序</td>
+</tr>
+<tr>
+<td style="text-align:center">$0</td>
+<td style="text-align:center">当前Shell执行程序的名称，在终端环境下，该值等于$SHELL，在脚本中，该值等于执行脚本时输入的指令</td>
+</tr>
+</tbody>
+</table>
+</div>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>Shell</tag>
+        <tag>脚本语言</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【C语言笔记】变量</title>
     <url>/posts/20230625/231208.html</url>
     <content><![CDATA[<div class="note blue no-icon flat"><p>本文为刚毕业参加工作时，初学C语言时做的一些笔记，适合初学者读阅，内容不保证百分百正确，若您对其中的描述有任何疑问可在留言板块进行留言。</p>
-<p>以下为我使用的C语言的运行和编译环境：<br>System Version: <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version: <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version: 11.3.0<br>STDC VERSIOn: 201710L</p>
+<p>以下为我使用的C语言的运行和编译环境：<br>System Version : <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version : <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version : <a href="https://gcc.gnu.org/gcc-11/">11.3.0</a><br>STDC Version : <a href="https://www.open-std.org/JTC1/SC22/WG14/">201710L</a></p>
 <p><strong>摘要：</strong> 简单的描述了C语言中的变量的分类、作用域、生命周期等内容，对<code>static</code>、<code>extern</code>、<code>const</code>、<code>volaite</code>关键字对变量的作用进行了简要分析。</p>
 </div>
 <h1 id="1-变量的分类"><a href="#1-变量的分类" class="headerlink" title="1. 变量的分类"></a>1. 变量的分类</h1><ul>
@@ -187,274 +559,6 @@
 <li><p>const 与 volatile 可同时修饰变量。</p>
 </li>
 </ul>
-]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>C</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【C语言笔记】表达式</title>
-    <url>/posts/20230629/134737.html</url>
-    <content><![CDATA[<div class="note blue no-icon flat"><p>本文为刚毕业参加工作时，初学C语言时做的一些笔记，适合初学者读阅，内容不保证百分百正确，若您对其中的描述有任何疑问可在留言板块进行留言。</p>
-<p>以下为我使用的C语言的运行和编译环境：<br>System Version: <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version: <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version: 11.3.0<br>STDC VERSIOn: 201710L</p>
-<p><strong>摘要：</strong> 简述了表达式的组成，类别，以及相关语法，解释什么是左值和右值。</p>
-</div>
-<h1 id="1-表达式的定义"><a href="#1-表达式的定义" class="headerlink" title="1. 表达式的定义"></a>1. 表达式的定义</h1><p>表达式是由一系列运算符 <code>operators</code> 和操作数 <code>operands</code> 组成的。运算符指明了要进行何种运算和操作，而操作数则是运算符操作的对象。在C语言中，常量、变量、函数调用以及按C语言语法规则用运算符把运算数连接起来的式子都是合法的表达式。</p>
-<ul>
-<li><strong>任何表达式都具有值和类型的两种属性</strong></li>
-<li><strong>在表达式结束后加上分号的句子称为<code>表达式语句</code></strong></li>
-</ul>
-<p><strong>表达式的语法规则</strong><br>[operands] [operators] [operands] …<br>表达式可以是单个的常量或变量，也可是多个常量、变量组合在一起的更复杂的表达式。</p>
-<p><strong>表达式的作用</strong></p>
-<ul>
-<li>数值计算</li>
-<li>指明数据对象</li>
-<li>产生副作用 </li>
-<li>以上目的的结合</li>
-</ul>
-<h2 id="1-1-运算符"><a href="#1-1-运算符" class="headerlink" title="1.1 运算符"></a>1.1 运算符</h2><p>运算符是整个表达式的核心，它代表着表达式需要进行怎样的逻辑运算，预示着表达式的行为和结果，C语言中可用的运算符如下。</p>
-<details class="folding-tag" green><summary> 查看运算符优先级列表 </summary>
-              <div class='content'>
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"><caption>运算符优先级列表</caption>  <tr>    <th width="15%" bgcolor="#66ccff"  align="center">优先级</th>    <th width="15%" bgcolor="#66ccff"  align="center">运算符</th>    <th width="30%" bgcolor="#66ccff"  align="center">含义</th>    <th bgcolor="#66ccff"  align="center">使用形式</th>    <th width="15%" bgcolor="#66ccff"  align="center">结合方向</th>  </tr>  <tr>    <th  rowspan="5">1</th>    <th rowspan="2"> () </th>    <th> 优先级运算符 </th>    <th> (表达式) </th>    <th> 块结合 </th>  </tr>  <tr>    <th> 函数调用运算符 </th>    <th> func_addr() </th>    <th rowspan="4"> 自左至右 </th>  </tr>  <tr>    <th> [] </th>    <th> 下标运算符 </th>    <th> ptr[index] </th>  </tr>  <tr>    <th> -> </th>    <th> 指向成员运算符 </th>    <th> struct_ptr->member </th>  </tr>  <tr>    <th> . </th>    <th> 取成员运算符 </th>    <th> struct_obj.member </th>  </tr>  <tr>    <th  rowspan="9">2</th>    <th> (type) </th>    <th> 类型强制转换运算符 </th>    <th> (int)8.2 </th>    <th> 块结合 </th>  </tr>  <tr>    <th> - </th>    <th> 负号运算符 </th>    <th> -var </th>    <th rowspan="8"> 自右至左 </th>  </tr>  <tr>    <th> ++ </th>    <th> 自增运算符 </th>    <th> var++/++var </th>  </tr>  <tr>    <th> -- </th>    <th> 自减运算符 </th>    <th> var--/--var </th>  </tr>  <tr>    <th> * </th>    <th> 解引用运算符 </th>    <th> *ptr </th>  </tr>  <tr>    <th> & </th>    <th> 取地址运算符 </th>    <th> &var_name </th>  </tr>  <tr>    <th> ! </th>    <th> 逻辑非运算符 </th>    <th> !expr </th>  </tr>  <tr>    <th> ~ </th>    <th> 按位取反运算符 </th>    <th> ~expr </th>  </tr>  <tr>    <th> sizeof </th>    <th> 内存占用长度运算符 </th>    <th> sizeof(var)  </th>  </tr>  <tr>    <th  rowspan="3">3</th>    <th> * </th>    <th> 乘法运算符 </th>    <th> expr * expr </th>    <th  rowspan="3"> 自左至右 </th>  </tr>  <tr>    <th> / </th>    <th> 除法运算符 </th>    <th> expr / expr </th>  </tr>  <tr>    <th> % </th>    <th> 取模运算符 </th>    <th> expr % expr </th>  </tr>  <tr>    <th  rowspan="2">4</th>    <th> + </th>    <th> 加法运算符 </th>    <th> expr + expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> - </th>    <th> 减法运算符 </th>    <th> expr - expr </th>  </tr>  <tr>    <th  rowspan="2">5</th>    <th> << </th>    <th> 左移运算符 </th>    <th> var << expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> >> </th>    <th> 右移运算符 </th>    <th> var >> expr </th>  </tr>  <tr>    <th  rowspan="4">6</th>    <th> > </th>    <th> 大于判断运算符 </th>    <th> expr > expr </th>    <th  rowspan="4"> 自左至右 </th>  </tr>  <tr>    <th> >= </th>    <th> 大于等于判断运算符 </th>    <th> expr >= expr </th>  </tr>  <tr>    <th> < </th>    <th> 小于判断运算符 </th>    <th> expr < expr </th>  </tr>  <tr>    <th> <= </th>    <th> 小于等于判断运算符 </th>    <th> expr <= expr </th>  </tr>  <tr>    <th  rowspan="2">7</th>    <th> == </th>    <th> 等于判断运算符 </th>    <th> expr == expr </th>    <th  rowspan="2"> 自左至右 </th>  </tr>  <tr>    <th> != </th>    <th> 不等于判断运算符 </th>    <th> expr != expr </th>  </tr>  <tr>    <th  rowspan="1">8</th>    <th> & </th>    <th> 按位与运算符 </th>    <th> expr & expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">9</th>    <th> ^ </th>    <th> 按位异或运算符 </th>    <th> expr ^ expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">10</th>    <th> | </th>    <th> 按位或运算符 </th>    <th> expr | expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">11</th>    <th> && </th>    <th> 逻辑与运算符 </th>    <th> expr && expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">12</th>    <th> || </th>    <th> 逻辑或运算符 </th>    <th> expr || expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th  rowspan="1">13</th>    <th> ？: </th>    <th> 条件运算符 </th>    <th> expr1 ？ expr2 : expr3 </th>    <th  rowspan="1"> 自右至左 </th>  </tr>  <tr>    <th  rowspan="11">14</th>    <th> = </th>    <th> 赋值运算符 </th>    <th> var = expr </th>    <th  rowspan="11"> 自右至左 </th>  </tr>  <tr>    <th> *= </th>    <th> 乘后赋值运算符 </th>    <th> var *= expr </th>  </tr>  <tr>    <th> /= </th>    <th> 除后赋值运算符 </th>    <th> var /= expr </th>  </tr>  <tr>    <th> %= </th>    <th> 取模后赋值运算符 </th>    <th> var %= expr </th>  </tr>  <tr>    <th> += </th>    <th> 相加后赋值运算符 </th>    <th> var += expr </th>  </tr>  <tr>    <th> -= </th>    <th> 相减后赋值运算符 </th>    <th> var -= expr </th>  </tr>  <tr>    <th> <<= </th>    <th> 左移后赋值运算符 </th>    <th> var <<= expr </th>  </tr>  <tr>    <th> >>= </th>    <th> 右移后赋值运算符 </th>    <th> var >>= expr </th>  </tr>  <tr>    <th> &= </th>    <th> 按位与后赋值运算符 </th>    <th> var &= expr </th>  </tr>  <tr>    <th> ^= </th>    <th> 按位异或后赋值运算符 </th>    <th> var ^= expr </th>  </tr>  <tr>    <th> |= </th>    <th> 按位或后赋值运算符 </th>    <th> var |= expr </th>  </tr>  <tr>    <th  rowspan="1">15</th>    <th> , </th>    <th> 逗号运算符 </th>    <th> expr , expr </th>    <th  rowspan="1"> 自左至右 </th>  </tr>  <tr>    <th colspan="5" align="left">注:同一优先级的运算符，运算顺序由其结合方向决定</th>  </tr></table>
-              </div>
-            </details>
-<h2 id="1-2-操作数"><a href="#1-2-操作数" class="headerlink" title="1.2. 操作数"></a>1.2. 操作数</h2><p>操作数就是表达式的操作对象，是表达式进行表达的窗口。任何变量或常量都可以是操作数，但在不同的表达式类型中，有其相应的语法规则进行约束。</p>
-<h1 id="2-常量表达式"><a href="#2-常量表达式" class="headerlink" title="2.常量表达式"></a>2.常量表达式</h1><p>常量表达式的特点</p>
-<ul>
-<li>表达式的值不会改变</li>
-<li>在编译期间可以进行确定的值</li>
-</ul>
-<details class="folding-tag" green><summary> e.g. 常量表达式示例 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> a = <span class="number">1</span>;          <span class="comment">//常量表达式</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> b = a + <span class="number">1</span>;      <span class="comment">//由于变量a是常量, 所以该表达式也为常量表达式</span></span><br><span class="line"><span class="type">int</span> c = <span class="number">3</span>;                <span class="comment">//非常量表达式, 变量c非常量</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> d = function(); <span class="comment">//非常量表达式, function()的值在编译期间无法得到</span></span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-<h1 id="3-左值与右值"><a href="#3-左值与右值" class="headerlink" title="3.左值与右值"></a>3.左值与右值</h1><p>左值与右值的概念来自于赋值表达式，左右值是表达式的值属性的一种描述，在更为复杂的 <strong><code>C++</code></strong> 语法中，左右值的概念更为重要，理解好左值与右值对理解程序以及语法的设计很有帮助。</p>
-<h2 id="3-1-C语言中左值与右值的定义"><a href="#3-1-C语言中左值与右值的定义" class="headerlink" title="3.1. C语言中左值与右值的定义"></a>3.1. C语言中左值与右值的定义</h2><p>C99 标准中定义<code>lvalue</code>为具有<span class='nota' data-nota='对象即是指一块内存区域'>对象型别</span>或除<code>void</code>外的<span class='nota' data-nota='不完整型别是指可以用来描述一个标识符类别，却无法确认其标识符内存大小的型别'>不完整型别</span>的表达式，也可以理解为一个左值表达式一定表示了一块内存区域。可以使用取地址运算符 <strong><code>&amp;</code></strong> 的表达式一定是左值表达式。<code>rvalue</code>不指向任何对象，仅表示一个值。</p>
-<p>在最常见的赋值表达式中，即含有 <strong><code>=</code></strong> 赋值运算符的表达式，若需要该表达式合法，则需要满足</p>
-<ul>
-<li><strong><code>=</code></strong> 号左侧的表达式必须是左值</li>
-<li><strong><code>=</code></strong> 号右侧的表达式可以是左值也可以是右值</li>
-</ul>
-<p>左值的特点</p>
-<ul>
-<li>可通过取地址运算符获取左值的地址。</li>
-<li>可出现在赋值或组合赋值符号的左边或右边。</li>
-<li>可修改的左值可用作赋值运算符的左操作数。</li>
-</ul>
-<p>右值的特点</p>
-<ul>
-<li>无法对右值进行取地址操作。</li>
-<li>右值不能放在赋值或者组合赋值符号的左边。</li>
-<li>右值可以用来初始化const左值引用。</li>
-</ul>
-<h2 id="3-2-左值与运算符"><a href="#3-2-左值与运算符" class="headerlink" title="3.2. 左值与运算符"></a>3.2. 左值与运算符</h2><ul>
-<li><p>变量名、数组名、函数名<br>被<code>const</code> 修饰符修饰的变量名，数组名和函数名都是不可被修改的左值。</p>
-</li>
-<li><p>字符串常量<br>C语言中的字符串常量是一个左值，可以对其进行取地址。<br>例如：字符串 <code>&quot;hello world&quot;</code>, 对该字符串取地址是合法的 <code>&amp;&quot;hello world&quot;</code>。</p>
-</li>
-<li><p>解引用操作符表达式的结果<br>解引用操作符会产生一个左值，但其操作数可以是左值或右值,即可以对解引用操作符的对象进行赋值操作。</p>
-<details class="folding-tag" green><summary> e.g. 解引用 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">3</span>;</span><br><span class="line"><span class="type">int</span> *ptr = &amp;a;</span><br><span class="line">*ptr = <span class="number">2</span>;      <span class="comment">//*ptr 是左值</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">  *((int *)0x7ffead2b47a0)是一个左值</span></span><br><span class="line"><span class="comment">  但对0x7ffead2b47a0这个地址的值的含义尚不明确</span></span><br><span class="line"><span class="comment">  若该区域没有被引用，则会使程序发生崩溃</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">*((<span class="type">int</span> *)<span class="number">0x7ffead2b47a0</span>) = <span class="number">1</span>; </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-</li>
-</ul>
-<h2 id="3-3-右值与运算符"><a href="#3-3-右值与运算符" class="headerlink" title="3.3. 右值与运算符"></a>3.3. 右值与运算符</h2><ul>
-<li><p>各种基本数据类型的字面常量<br>字面常量不一定会占据存储空间，编译器可能会将这些字面常量当做立即数进行处理，故字面常量是右值。</p>
-<details class="folding-tag" green><summary> e.g. 字面常量 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">1</span>;         <span class="comment">// 1为字面常量，是右值</span></span><br><span class="line"><span class="type">float</span> b = <span class="number">1.1f</span>;    <span class="comment">// 1.1为字面常量，是右值</span></span><br><span class="line"><span class="type">char</span> c = <span class="string">&#x27;h&#x27;</span>;      <span class="comment">// &#x27;h&#x27;为字面常量，是右值</span></span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-</li>
-<li><p>枚举常量<br>编译器常常将枚举常量当做是值确认的整形的字面常量进行处理，在编译阶段，枚举常量就会被替换为字面常量，故枚举常量也是右值。</p>
-<details class="folding-tag" green><summary> e.g. 枚举常量 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">week</span>&#123;</span>Mon, Tues, Wed, Thur, Fir, Sat, Sun&#125;;</span><br><span class="line">week tody = Sun;   <span class="comment">// Sun为枚举常量，是右值</span></span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-</li>
-<li><p>双目运算符的运算结果<br>C语言中，双目运算符的操作数可以是左值或者右值，但其运算的结果必然是右值。</p>
-</li>
-<li><p>函数调用表达式的返回值<br>C语言中，函数调用表达式的值总是一个右值，无法对其进行取地址。</p>
-<details class="folding-tag" green><summary> e.g. 函数返回值 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">func</span><span class="params">(<span class="type">void</span>)</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> *a = &amp;func(); <span class="comment">//这是不合法的</span></span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-</li>
-</ul>
-<h1 id="4-逗号表达式"><a href="#4-逗号表达式" class="headerlink" title="4. 逗号表达式"></a>4. 逗号表达式</h1><p>逗号表达式是指使用逗号运算符的表达式，用于将表达式连接起来，是一种使编程更简洁的语法。其一般形式为：<br><code>[表达式1], [表达式2], [...]</code></p>
-<details class="folding-tag" green><summary> e.g. 逗号表达式 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">10</span>;</span><br><span class="line"><span class="type">int</span> b = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">a = <span class="number">2</span>*a, <span class="number">4</span>*a;    <span class="comment">//结果为 a = 20, 赋值运算符的优先级高于逗号运算符</span></span><br><span class="line"></span><br><span class="line">b = (<span class="number">2</span>*b, <span class="number">4</span>*b);  <span class="comment">//结果为 b = 40</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//不是逗号表达式，这里的逗号并不是被用作逗号运算符，而是被用作传递实参的分隔符</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;a = %d, b = %d\n&quot;</span>, a, b);</span><br><span class="line"></span><br><span class="line"><span class="comment">// (a, b)为逗号表达式, 结果为 a = 40, b = 40;</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;a = %d, b = %d\n&quot;</span>, (a, b), b);</span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-<p>上述例子中 <code>4 * a</code> 和 <code>2 * b</code> 均是无意义的表达式，其没有产生任何的<code>副作用</code>，若在编译时打开 <strong><code>-Wall</code></strong> 选项，便会看见 <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-value">-Wunused-value</a> 的警告。</p>
-<h1 id="4-1-常见用法"><a href="#4-1-常见用法" class="headerlink" title="4.1. 常见用法"></a>4.1. 常见用法</h1><details class="folding-tag" green><summary> e.g. 同类型变量声明 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a, b, c, d, e;</span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-<details class="folding-tag" green><summary> e.g. 循坏语句 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>, j = <span class="number">1</span>; i &lt; <span class="number">2</span> &amp;&amp; j &lt; <span class="number">3</span>; i++, j++)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span>(i++, i &lt; <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-<details class="folding-tag" green><summary> e.g. return 语句 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">return</span> a = <span class="number">1</span>, ... , a;</span><br></pre></td></tr></table></figure>
-              </div>
-            </details>
-<h1 id="5-前缀-与后缀"><a href="#5-前缀-与后缀" class="headerlink" title="5. 前缀 ++ / -- 与后缀 ++ / --"></a>5. 前缀 <code>++</code> / <code>--</code> 与后缀 <code>++</code> / <code>--</code></h1><p>前缀形式的等效表达式如下:<br><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span>&amp; <span class="type">int</span>::<span class="keyword">operator</span>++()</span><br><span class="line">&#123;</span><br><span class="line">  *<span class="keyword">this</span> += <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>前缀形式返回的是自身加1后的值。</p>
-<p>后缀形式的等效表达式如下:<br><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> <span class="type">int</span>::<span class="keyword">operator</span>++(<span class="type">int</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> oldValue = *<span class="keyword">this</span>;</span><br><span class="line">  ++(*<span class="keyword">this</span>);</span><br><span class="line">  <span class="keyword">return</span> oldValue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>后缀形式返回保存的先前自身的值，自身已进行加1操作。</p>
-<p>这里举例 <code>C++</code> 的实现是因为在 <code>C++</code> 的语法中，<strong>前缀操作是一个左值，而后缀操作是一个右值</strong>，这一点与C有着区别，C中不管是前缀操作还是后缀操作，其都是右值。</p>
-<details class="folding-tag" green><summary> e.g. </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">3</span>;</span><br><span class="line">++a = <span class="number">4</span>;</span><br></pre></td></tr></table></figure><p>使用gcc编译，会出现 <code>lvalue required as left operand of assignment</code> 的报错，而使用g++编译则不会。</p>
-              </div>
-            </details>
-]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>C</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【Linux笔记】简介</title>
-    <url>/posts/20230629/135145.html</url>
-    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【Linux笔记】Shell</title>
-    <url>/posts/20230629/135252.html</url>
-    <content><![CDATA[<h1 id="TODO-💤"><a href="#TODO-💤" class="headerlink" title="TODO 💤"></a>TODO 💤</h1>]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>Shell</tag>
-        <tag>脚本语言</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【C语言笔记】函数</title>
-    <url>/posts/20230629/135028.html</url>
-    <content><![CDATA[<div class="note blue no-icon flat"><p>本文为刚毕业参加工作时，初学C语言时做的一些笔记，适合初学者读阅，内容不保证百分百正确，若您对其中的描述有任何疑问可在留言板块进行留言。</p>
-<p>以下为我使用的C语言的运行和编译环境：<br>System Version: <a href="https://cn.ubuntu.com/blog/upgrade-your-desktop-ubuntu-22-04-lts-cn">Ubuntu22.04.1</a><br>Linux kernel Version: <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/">5.19.0</a><br>GCC Version: 11.3.0<br>STDC VERSIOn: 201710L</p>
-<p><strong>摘要：</strong> 简单的描述了C语言中的函数的声明和定义、函数名的作用、堆和栈的区别、以及简述了如何在C语言中使用匿名函数。</p>
-</div>
-<h1 id="1-函数简介"><a href="#1-函数简介" class="headerlink" title="1. 函数简介"></a>1. 函数简介</h1><p>C语言中的函数可以抽象的理解为可轻松重复使用的代码块，它将一个个表达式和变量封装在一起，用来独立地完成某个功能。函数存在入口和出口，在入口处可以接收用户传递的参数，也可以不接收，在出口处可以将一些函数内部信息返回，也可以不返回任何信息。</p>
-<p>将代码块封装成函数的过程叫做函数的定义。</p>
-<h2 id="1-1-声明"><a href="#1-1-声明" class="headerlink" title="1.1. 声明"></a>1.1. 声明</h2><p>形参：函数原型中定义的参数，其作用域为整个函数。</p>
-<p><code>[链接属性修饰符] 函数返回类型 函数名 (形参数据类型列表);</code></p>
-<p>函数返回类型可以是任意的数据类型(包括基本类型、空类型、构造类型、指针类型、自定义类型)，当返回类型为<code>void</code>时，表明函数无返回值，函数体内可以无<code>return</code>语句。函数体中<code>return</code>语句返回的数据类型需与函数声明的函数返回类型相同。</p>
-<p>函数的形参数据类型列表可以包含多个任意类型的参数，也可不写任何形参(不符合编程规范)。</p>
-<p>在函数声明的形参数据类型列表中，可以只写明形参的数据类型，而不用书写变量名。</p>
-<p>链接属性修饰符可不书写，默认为<code>extern</code>，一般将具有外部链接属性的函数声明放在头文件中，供其它翻译单元引用。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//声明返回类型为void,形参列表为void的函数func1,该函数无任何返回值以及需要传入的参数</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">func1</span> <span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明返回类型为void *,形参列表为int的函数func2,该函数返回void *类型值以及需要传入一个int类型的参数</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">func2</span> <span class="params">(<span class="type">int</span> a)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//函数声明可以存在多个,这里可以省略形参,编译器会根据函数的定义来确定函数的形参列表</span></span><br><span class="line"><span class="keyword">struct</span> school <span class="title function_">func3</span> <span class="params">(<span class="keyword">struct</span> student)</span>;</span><br><span class="line"><span class="keyword">struct</span> school <span class="title function_">func3</span> <span class="params">()</span>; </span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> <span class="title">err_code</span> <span class="title">err_code</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//声明具有内部链接属性,返回类型为err_code,形参列表为int的函数func4</span></span><br><span class="line"><span class="type">static</span> err_code <span class="title function_">func4</span> <span class="params">(<span class="type">int</span> index)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明具有外部链接属性,返回类型为err_code,形参列表为const char *的函数func5</span></span><br><span class="line"><span class="keyword">extern</span> err_code <span class="title function_">func5</span> <span class="params">(<span class="type">const</span> <span class="type">char</span> *str)</span>;</span><br></pre></td></tr></table></figure>
-<p>函数的声明是非必须的，若需要在不同的翻译单元中引用某个函数或不在该函数的作用域内引用，则需要在未定义该函数的翻译单元中进行函数声明，函数的声明应与函数的定义保持一致性。</p>
-<h2 id="1-2-定义"><a href="#1-2-定义" class="headerlink" title="1.2. 定义"></a>1.2. 定义</h2><p><code>[链接属性修饰符] 函数返回类型 函数名 (形参列表) &#123;  函数体 &#125;</code></p>
-<p>函数的定义即函数的实现，在一个程序所链接的所有的翻译单元中只能存在一个具有外部链接属性的函数实现(ODR:一个定义规则)，否则在编译时会出现链接器链接报错，但可以在不同的翻译单元中存在同名的具有内部链接属性的函数实现。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">func1</span> <span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义具有内部属性的函数func2，其返回值为void *类型，形参为整型变量a</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> *<span class="title function_">func2</span> <span class="params">(<span class="type">int</span> a)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="1-3-函数的作用域"><a href="#1-3-函数的作用域" class="headerlink" title="1.3. 函数的作用域"></a>1.3. 函数的作用域</h2><p>就单一的翻译单元来说，其函数若未使用 <strong><code>static</code></strong> 关键字进行修饰和在任何其他地方进行声明，其作用域为从翻译单元的定义处一直到该翻译单元的结束位置。也可使用声明来扩展其作用域，函数被声明后，其作用域为声明处一直到该翻译单元的结束位置。</p>
-<h1 id="2-函数调用"><a href="#2-函数调用" class="headerlink" title="2. 函数调用"></a>2. 函数调用</h1><h2 id="2-1-堆与栈"><a href="#2-1-堆与栈" class="headerlink" title="2.1. 堆与栈"></a>2.1. 堆与栈</h2><h3 id="2-1-1-栈"><a href="#2-1-1-栈" class="headerlink" title="2.1.1 栈"></a>2.1.1 栈</h3><p>栈是程序运行内存中的一个特别区域，它用来存储被每一个函数(包括 <strong><code>mian</code></strong> 函数)创建的动态存储局部变量，包括函数本身。栈是 <strong><code>FILO</code></strong> 结构体(First input Last output)，就是先进后出原则的结构体，它直接被CPU管理和充分利用。每次函数声明和定义一个新的局部变量时，它就会被 <strong><code>push</code></strong> 到栈中，然后在每次一个函数退出时，所有关于这个函数中定义的局部变量(包括形参)都会被释放(栈顶重新调整，释放处内存空间中的数据并不会被马上覆盖，而是等到下一个局部变量入栈时进行覆盖)。一旦栈中的变量释放，这块栈的区域就会变成可用的，提供给其他栈中的变量。用栈存储变量的好处是，其内存是被CPU直接管理的，不需要进行手动的创建内存和手动的释放内存。CPU组织和管理栈内存是很高效的，读出和写入栈中存储的变量是很快的。<br>栈的内存空间相对较小，在定义局部变量和调用函数时应考虑开辟的栈空间大小是否合适，避免造成栈溢出。</p>
-<h3 id="2-1-2-堆"><a href="#2-1-2-堆" class="headerlink" title="2.1.2 堆"></a>2.1.2 堆</h3><p>堆也是程序运行内存中的一个特别区域，但不是被自动管理的内存区域，对堆内存的使用，需要进行手动的申请(C:malloc/C++:new)和手动释放(C:free/C++:delete)。如果手动申请一片堆区内存后，而不进行手动释放，在程序运行的过程中，此处堆内存不会被清理，其他变量也无法申请该区域的内存，此时会造成内存泄漏的问题。堆区内存比栈区内存空间大，但也是有限的，操作系统为程序分配的堆内存若被耗尽，则会被操作系统杀死该进程程序。若是在无操作系统管理的设备上造成内存泄漏，会使整个系统发生崩溃。</p>
-<h3 id="2-1-3-栈和堆的优缺点"><a href="#2-1-3-栈和堆的优缺点" class="headerlink" title="2.1.3. 栈和堆的优缺点"></a>2.1.3. 栈和堆的优缺点</h3><ul>
-<li>栈<ol>
-<li>快速访问。</li>
-<li>没有必要明确的创建分类变量，因为它是自动管理的。</li>
-<li>空间被CPU高效地管理着，内存不会变成碎片。</li>
-<li>只有局部变量。</li>
-<li>受限于栈大小(取决于操作系统)。</li>
-<li>变量不能调整大小。</li>
-</ol>
-</li>
-<li>堆<ol>
-<li>变量可以被全局访问。</li>
-<li>没有内存大小限制。</li>
-<li>访问比较慢(相对栈区访问)。</li>
-<li>没有高效地使用空间，随着块内存的创建和销毁，内存可能会变成碎片。</li>
-<li>必须手动管理内存(变量的创建和销毁由开发人员负责)。</li>
-<li>变量大小可以用realloc()调整。</li>
-</ol>
-</li>
-</ul>
-<h2 id="2-2-调用的本质"><a href="#2-2-调用的本质" class="headerlink" title="2.2. 调用的本质"></a>2.2. 调用的本质</h2><p>C语言通过函数名后跟括号加上实参的形式进行函数调用。函数的调用是消耗栈区内存空间的，调用函数时，将函数定义所在的地址压入栈顶，栈顶指针”上移”，函数返回时，将压入的函数定义的地址弹出，栈顶指针”下移”，此次栈区空间被释放。若存在函数的多级调用而函数一直未返回(嵌套函数，递归函数)，栈区的内存空间会很快被消耗完，造成栈溢出。</p>
-<h2 id="2-3-参数传递"><a href="#2-3-参数传递" class="headerlink" title="2.3. 参数传递"></a>2.3. 参数传递</h2><h3 id="2-3-1-实参与形参"><a href="#2-3-1-实参与形参" class="headerlink" title="2.3.1. 实参与形参"></a>2.3.1. 实参与形参</h3><p>实参：实际定义的变量，定义后就会分配内存，出现在主调函数中，在被调用后，会将实参所对应类型的值赋值给形参，实参变量也不能使用<br>形参：在函数定义时，形式上的参数，只有在函数被调用时才分配内存单元(栈区)，在调用结束时，即刻释放所分配的内存单元。因此，形参也是局部变量，作用域为在整个函数内部有效。函数调用结束返回主调函数后则不能再使用该形参变量。</p>
-<ul>
-<li>参数的传递是单向的，仅能是从实参传递给形参，形参无法将值传递给实参。</li>
-<li>实参传递给形参的参数个数、类型和顺序都应相同，否则会进行数据类型的强制转换，可能出现数据丢失或者”类型不匹配”的错误。</li>
-</ul>
-<h3 id="2-3-2-值传递与引用传递"><a href="#2-3-2-值传递与引用传递" class="headerlink" title="2.3.2. 值传递与引用传递"></a>2.3.2. 值传递与引用传递</h3><p>仅将实参的值拷贝给形参，称为值传递。由于参数传递的单向性，形参在函数内部被修改值后，无法传递给外部的实参，即值传递不影响实参的值。</p>
-<p>C语言没有实质上的引用传递，而是通过传入变量的地址而达到修改实参的目的。将实参的地址传递给形参，由于形参所指向的地址为实参变量的地址，所以修改形参对应地址中存储的值，就是修改实参变量的值，从而达到引用传递的目的。在C++中存在引用传递的语法，在形参变量前面加上<code>&amp;</code>符号意为是对实参的引用，在函数内部对形参变量的操作，就是对实参变量的操作。</p>
-<h1 id="3-函数指针"><a href="#3-函数指针" class="headerlink" title="3. 函数指针"></a>3. 函数指针</h1><p>函数指针也是一种指针类型类型，可以通过函数指针进行函数的调用。</p>
-<p>函数指针的定义语法为<code>[链接属性修饰符] 函数返回类型 (*指针变量名)(函数形参类型列表);</code></p>
-<p>将函数的地址赋值给函数指针后，就可以通过该函数指针进行函数的调用。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//定义一个名为funcptr1的函数指针，未初始化</span></span><br><span class="line"><span class="type">void</span> (*funcptr1) (<span class="type">int</span> a);</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个名为funcptr2的函数指针，并初始化的指向func2</span></span><br><span class="line"><span class="type">void</span> (*funcptr2) (<span class="type">int</span> a) = func2;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个名为funcptr3的函数指针，并初始化的指向func2</span></span><br><span class="line"><span class="type">void</span> (*funcptr3) (<span class="type">int</span> a) = &amp;func2;</span><br><span class="line"></span><br><span class="line"><span class="comment">//一般将函数指针定义为结构体的成员变量，用于构筑对象</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">man</span> &#123;</span></span><br><span class="line">  <span class="type">char</span> name[<span class="number">16</span>];</span><br><span class="line">  <span class="type">int</span> (*eat) (<span class="type">int</span> count);</span><br><span class="line">  <span class="type">int</span> (*run) (<span class="type">int</span> speed);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//通过函数指针调用func2</span></span><br><span class="line">funcptr2(<span class="number">2</span>);</span><br><span class="line">funcptr3(<span class="number">3</span>);</span><br></pre></td></tr></table></figure>
-<p>函数的定义的名称，实际上是一个符号，并非是真正意义上的函数地址，而直接通过函数名称对函数指针赋值实际是一种语法糖(减少程序书写量的写法)，<code>sizeof(func2) = 1</code>，而标准的写法即是对函数名进行取地址后赋值给函数指针。但在实际开发过程中，多数是funcptr2的赋值方式。</p>
-<p>使用 <strong><code>typedef</code></strong> 定义自定义的函数指针类型</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//定义一个函数指针类型的自定义类型FUNC_TYPE</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="title function_">void</span> <span class="params">(*FUNC_TYPE)</span> <span class="params">(<span class="type">int</span> a)</span>;</span><br><span class="line">FUNC_TYPE funcptr4 = func2;</span><br><span class="line">funcptr4(<span class="number">4</span>);</span><br></pre></td></tr></table></figure>
-<h1 id="4-函数返回值"><a href="#4-函数返回值" class="headerlink" title="4. 函数返回值"></a>4. 函数返回值</h1><p>在函数调用过程中，未使用static修饰定义的变量是动态存储的局部变量，局部变量是被压入栈区中存储的，当函数返回时，这些局部变量出栈，即局部变量已经被销毁，局部变量所占用的内存空间没有被清空，但是已经可以被分配给其他变量了，所以有可能在函数退出时，该内存已经被修改了，对于此局部变量来说已经是没有意义的值了。</p>
-<p>在C语言中，通过<code>return</code>语句返回的值是被存储在寄存器中的，主调函数可以通过<code>=</code>等号直接取得函数的返回值。在16位程序中，返回值保存在<code>ax</code>寄存器中，32位程序中，返回值保持在<code>eax</code>寄存器中，64位程序的返回值，<code>edx</code>寄存器保存高32bit，<code>eax</code>寄存器保存低32bit。在函数调用结束后，返回值被临时存储到寄存器中，并没有放到堆或栈中，与内存没有关系。当退出函数的时候，局部变量可能被销毁，但是返回值已被存储到寄存器中，已与局部变量的生命周期无关。</p>
-<p><del>寄存器的储存空间有限，当函数需要返回占用内存较大的结构体类型时，应返回该结构体的地址</del><span class='nota' data-nota='2023/7/10/修改'>已作废</span>。<br>现代编译器会对内存大小小于指针类型所占用空间的返回值使用寄存器存储其返回值，而对于内存大小大于指针类型占用空间大小的返回值，编译器会根据自身的策略，决定是使用栈区内存来存储返回值还是申请堆区内存来存储返回值，然后将该内存的值通过拷贝赋值给调用方。相较于存储在寄存器中的变量的拷贝，这种从内存的拷贝赋值的方式是较慢的。所以在需要返回占用内存较大的结构时，应返回其对应结构体的地址，而不是结构体本身。<br>对于返回值是指针类型的，该指针不能指向的是动态存储的局部变量，否则，返回动态存储变量的地址是无效的，甚至会对程序带来灾难。</p>
-<h1 id="4-1-指针函数"><a href="#4-1-指针函数" class="headerlink" title="4.1. 指针函数"></a>4.1. 指针函数</h1><p>指针函数是指返回类型为指针的函数，指针则意味着其值是指向某个变量的地址，这里需要注意的是，若变量是在该函数中定义的栈区局部变量，返回该变量的指针是毫无意义的，且容易给程序带来严重的灾难，因为函数返回后，其栈顶指针下移，在这之上的栈区内存会被新定义的变量所覆盖，原变量的内存中的值以及毫无意义，甚至是错误的。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">char</span> *<span class="title function_">get_file_name1</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *p = <span class="built_in">strrchr</span>(path, <span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">  <span class="type">char</span> file_name[<span class="number">64</span>] = &#123;<span class="string">&quot;\0&quot;</span>&#125;; </span><br><span class="line"></span><br><span class="line">  <span class="built_in">strncpy</span>(file_name, p ? p + <span class="number">1</span> : path, <span class="keyword">sizeof</span>(file_name));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> file_name;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">char</span> *<span class="title function_">get_file_name2</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *p = <span class="built_in">strrchr</span>(path, <span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">  <span class="type">char</span> *file_name = <span class="built_in">malloc</span>(<span class="number">64</span>); </span><br><span class="line"></span><br><span class="line">  <span class="built_in">strncpy</span>(file_name, p ? p + <span class="number">1</span> : path, <span class="number">64</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> file_name;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在上述例子中 <code>get_file_name1</code> 和 <code>get_file_name2</code> 都为一个指针函数，都返回一个指向 <code>char</code> 类型的指针(字符串)，但区别是 <code>get_file_name1</code> 返回的变量是定义在栈区内存的字符串变量，而 <code>get_file_name2</code> 返回的变量是定义在堆区内存的字符串变量，在函数返回后，栈顶指针下移，其上方内存区域的值会被后续新定义的变量所覆盖，其内存区域的值已变得毫无意义，而堆区中的内存在不被手动释放后是无法被其他变量进行覆盖的，但要记住在使用该变量后，释放掉该内存。</p>
-<h1 id="5-内联函数"><a href="#5-内联函数" class="headerlink" title="5. 内联函数"></a>5. 内联函数</h1><p>前面提到函数的调用是需要消耗栈内存的，也存在入栈和出栈的处理时间，若某函数需要频繁的被调用且该函数的功能实现较为简单，则可以使用<span class='nota' data-nota='使用 inline关键字定义的函数体'>内联函数</span> 来提升程序的执行速度和减轻栈内存压力。</p>
-<p>什么是内联函数？</p>
-<ul>
-<li>编译器会直接将内联函数体的实现代码替换掉其函数调用代码，类似于宏展开的行为，但此过程发生在 <span class='nota' data-nota='编译过程有四个处理阶段:预编译、编译、汇编、链接'>编译阶段</span>。</li>
-</ul>
-<p><strong><code>inline</code></strong> 关键字使用注意事项</p>
-<ol>
-<li>必须与函数体定义一起使用，才能使函数成为内联函数，在函数声明时使用是无效的。</li>
-<li><code>inline</code>关键字只是编译建议，具体是否进行内联，由编译器决定。内联函数的实现必须是简单可靠的，不可递归。</li>
-<li>当内联函数不与任何<span class='nota' data-nota='static与extern'>链接属性关键字</span>一起使用且内联失效时，则此函数不会被定义，调用者在链接阶段会报<code>找不到该函数定义</code>的错误。</li>
-<li>当内联函数与 <strong><code>static</code></strong> 关键字一起使用时，若内联失效，则此内联函数会被当做普通的具有内部链接属性的函数，不会出现未定义的情况。</li>
-<li>当一个函数使用 <strong><code>extern</code></strong> 关键字声明或定义时，<code>inline</code> 关键字失效。</li>
-</ol>
-<details class="folding-tag" green><summary> e.g. 内联函数示例 </summary>
-              <div class='content'>
-              <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">inline</span> <span class="type">int</span> <span class="title function_">get_big</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> a &gt; b ? a : b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">inline</span> <span class="type">int</span> num_spin(<span class="type">unsigned</span> <span class="type">int</span> a, <span class="type">unsigned</span> <span class="type">int</span> b)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">while</span>(a--)&#123;</span><br><span class="line">        b++;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;b %d\n&quot;</span>, b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p><code>get_big</code>内联函数的定义简单，就一个比较语句，无论是否开启编译优化，该函数都可以成功内联。<br><code>num_spin</code>内联函数的定义中存在循坏语句，是复杂语句，编译器在不加优化选项时会内联失败，可以使用<code>-Winline</code>控制内联失败告警的输出。由于该内联函数是非静态的，编译器在会忽略其定义，调用者会找不到其定义编译报错。可使用 <strong><code>-O3</code></strong> 的优化选项，使编译器更为激进的将复杂的非静态内联函数进行内联展开，或定义为静态内联函数，即使编译器内联展开失败，也会存在该函数原型的定义。</p>
-              </div>
-            </details>
-<h1 id="6-内建函数"><a href="#6-内建函数" class="headerlink" title="6. 内建函数"></a>6. 内建函数</h1><p>内建函数是指由编译器提供的函数，这些函数像关键字一样可以直接使用，不需要包含对应的头文件。<br>内建函数的函数命名通常以<code>__builtin</code>开头，其主要功能如下:</p>
-<ul>
-<li>处理变长参数列表</li>
-<li>处理程序运行异常</li>
-<li>程序编译和性能优化</li>
-<li>查看函数运行的堆栈、C标准库的内建版本等信息</li>
-</ul>
-<h2 id="6-1-常用的内建函数"><a href="#6-1-常用的内建函数" class="headerlink" title="6.1. 常用的内建函数"></a>6.1. 常用的内建函数</h2><h3 id="builtin-return-address-level"><a href="#builtin-return-address-level" class="headerlink" title="__builtin_return_address(level)"></a>__builtin_return_address(level)</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> * __builtin_return_address (<span class="type">unsigned</span> <span class="type">int</span> level);</span><br></pre></td></tr></table></figure>
-<p>该函数用于返回当前函数或调用者的返回地址。参数<code>level</code>含义如下:</p>
-<ul>
-<li>0: 返回当前函数的返回地址</li>
-<li>1: 返回当前函数调用者的返回地址</li>
-<li>2: 返回当前函数调用者的调用者的返回地址</li>
-<li>…开始套娃</li>
-</ul>
-<h3 id="builtin-frame-address"><a href="#builtin-frame-address" class="headerlink" title="__builtin_frame_address"></a>__builtin_frame_address</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> * __builtin_frame_address (<span class="type">unsigned</span> <span class="type">int</span> level)</span><br></pre></td></tr></table></figure>
-<p>该函数返回当前函数或调用者的栈帧地址。参数<code>level</code>含义同上。</p>
-<h3 id="builtin-constant-p"><a href="#builtin-constant-p" class="headerlink" title="__builtin_constant_p"></a>__builtin_constant_p</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> __builtin_constant_p(...)</span><br></pre></td></tr></table></figure>
-<p>该函数用于判断参数是否为常量，若为常量则返回1，否则返回0，常用于编译优化和性能优化。根据操作的参数是常量从而走不同的分支来进行优化处理。</p>
-<h3 id="builtin-expect"><a href="#builtin-expect" class="headerlink" title="__builtin_expect"></a>__builtin_expect</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">long</span> __builtin_expect(<span class="type">long</span> <span class="built_in">exp</span>, <span class="type">long</span> c);</span><br></pre></td></tr></table></figure>
-<p>在编译分支语句的过程中，编译器会将可能性更大的分支代码紧跟着前面的代码，从而减少指令跳转带来的性能上的下降, 达到优化程序的目的。函数<code>__builtin_expect</code>中参数<code>exp</code>就是你的表达表达式，而参数<code>c</code>是你的期望 <code>exp == c</code>，但整个函数的返回值与参数<code>c</code>无关，该函数只是提醒编译器该表达式的值等于<code>c</code>的可能性很大，从而使编译器对分支进行优化，将可能性大的分支放在前面。<br>例；下述代码中，预测表达式<code>exp</code>的值等于<code>0</code>的可能性比较大，即走<code>else</code>分支的可能性大，编译器则会将调用<code>func2</code>的代码放在紧接着上一个语句代码的地方。<br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (__builtin_expect(<span class="built_in">exp</span>, <span class="number">0</span>)) &#123;</span><br><span class="line">  func1();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  func2();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>该函数便于让程序员进行分支预测，从而优化程序执行性能，在Linux内核中<code>likely</code>和<code>unlikely</code>的宏定义便是调用该函数实现的。<br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> likely(x)      __builtin_expect(!!(x), 1)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> unlikely(x)    __builtin_expect(!!(x), 0)</span></span><br></pre></td></tr></table></figure></p>
-<h1 id="7-匿名函数-Lambda表达式"><a href="#7-匿名函数-Lambda表达式" class="headerlink" title="7. 匿名函数(Lambda表达式)"></a>7. 匿名函数(Lambda表达式)</h1><p>匿名函数，即没有函数名的函数，是函数的一种形式。<br>在C语言中没有原生对匿名函数的支持，但GCC编译器的GNU扩展功能可以在函数中定义函数，因此可以用宏定义来模拟实现<code>Lambda表达式</code>。<br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> LAMBDA(_return_type, _arg_func_body) \</span></span><br><span class="line"><span class="meta">(&#123;_return_type __anonymous_fn _arg_func_body __anonymous_fn;&#125;)</span></span><br></pre></td></tr></table></figure><br><code>_return_type</code>即是该<code>Lambda</code>表达式的返回类型，<code>_arg_func_body</code>即是该匿名函数的参数列表和函数体，<code>__anonymous_fn</code>是这个代码块中的局部变量，用以表示该<code>Lambda</code>表达式的函数名称，并在后续进行调用。下面是使用示例:<br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> result = LAMBDA(<span class="type">int</span>, (<span class="type">int</span> a, <span class="type">int</span> b)&#123;<span class="keyword">return</span> a * b;&#125;)(<span class="number">5</span>, <span class="number">6</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;result = %d\n&quot;</span>, result);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>GCC编译器默认是使用GNU扩展的，你可以通过添加<code>-std=cxx</code>和<code>-pedantic</code>来强制GCC编译器使用C标准语法来编译程序。</p>
 ]]></content>
       <categories>
         <category>笔记</category>
